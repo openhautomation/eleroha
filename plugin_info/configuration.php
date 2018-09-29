@@ -22,3 +22,30 @@ if (!isConnect()) {
     die();
 }
 ?>
+<form class="form-horizontal">
+  <fieldset>
+    <legend><i class="icon loisir-darth"></i> {{Démon}}</legend>
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{Port Stick USB Elero}}</label>
+      <div class="col-sm-2">
+        <select class="configKey form-control" data-l1key="port">
+          <option value="none">{{Aucun}}</option>
+          <?php
+            foreach (jeedom::getUsbMapping() as $name => $value) {
+            	echo '<option value="' . $name . '">' . $name . ' (' . $value . ')</option>';
+            }
+            foreach (ls('/dev/', 'tty*') as $value) {
+            	echo '<option value="/dev/' . $value . '">/dev/' . $value . '</option>';
+            }
+          ?>
+        </select>
+      </div>
+   </div>
+   <div class="form-group">
+    <label class="col-lg-4 control-label">{{Port socket interne}}</label>
+    <div class="col-lg-2">
+        <input class="configKey form-control" data-l1key="socketport" placeholder="{{55030}}" />
+    </div>
+</div>
+</fieldset>
+</form>

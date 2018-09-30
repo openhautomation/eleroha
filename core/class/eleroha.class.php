@@ -20,6 +20,79 @@
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class eleroha extends eqLogic {
+
+  private function getMotorStructure(&$motorStructure){
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+
+    $motorStructure=array(
+      //Set motor Up
+      'up'=>array(
+        'name'=>__('Monter', __FILE__),
+        'id'=>'up',
+        'type'=>'action',
+        'subtype'=>'message',
+        'message_placeholder'=> __('Monter', __FILE__),
+        'title_disable'=> 1,
+        'historized'=>0,
+        'visible'=>1,
+        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setup')),
+        'unite'=>''
+      ),
+      //Set motor Down
+      'down'=>array(
+        'name'=>__('Descendre', __FILE__),
+        'id'=>'down',
+        'type'=>'action',
+        'subtype'=>'message',
+        'message_placeholder'=> __('Descendre', __FILE__),
+        'title_disable'=> 1,
+        'historized'=>0,
+        'visible'=>1,
+        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setdown')),
+        'unite'=>''
+      ),
+      //Set motor Stop
+      'stop'=>array(
+        'name'=>__('Stop', __FILE__),
+        'id'=>'stop',
+        'type'=>'action',
+        'subtype'=>'message',
+        'message_placeholder'=> __('Stop', __FILE__),
+        'title_disable'=> 1,
+        'historized'=>0,
+        'visible'=>1,
+        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setstop')),
+        'unite'=>''
+      ),
+      //Set motor Tilt position
+      'tilt'=>array(
+        'name'=>__('Ventillation', __FILE__),
+        'id'=>'tilt',
+        'type'=>'action',
+        'subtype'=>'message',
+        'message_placeholder'=> __('Ventillation', __FILE__),
+        'title_disable'=> 1,
+        'historized'=>0,
+        'visible'=>1,
+        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'settilt')),
+        'unite'=>''
+      ),
+      //Set motor Intermediate position
+      'intermediate'=>array(
+        'name'=>__('Position intermédiaire', __FILE__),
+        'id'=>'intermediate',
+        'type'=>'action',
+        'subtype'=>'message',
+        'message_placeholder'=> __('Position intermédiaire', __FILE__),
+        'title_disable'=> 1,
+        'historized'=>0,
+        'visible'=>1,
+        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setintermediate')),
+        'unite'=>''
+      )
+    );
+  )
+
   public static function deamon_info(){
     $return = array();
     $return['log'] = 'eleroha';
@@ -104,6 +177,13 @@ class eleroha extends eqLogic {
     sleep(1);
   }
 
+  public static function changeIncludeState($_state) {
+		$value = json_encode(array('apikey' => jeedom::getApiKey('eleroha'), 'cmd' => 'include_mode', 'state' => $_state));
+		$socket = socket_create(AF_INET, SOCK_STREAM, 0);
+		socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
+		socket_write($socket, $value, strlen($value));
+		socket_close($socket);
+	}
     /*     * *************************Attributs****************************** */
 
 
@@ -153,11 +233,51 @@ class eleroha extends eqLogic {
     }
 
     public function preUpdate() {
-
+      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+      if (empty($this->getConfiguration('channel'))) {
+        throw new Exception(__('Vous avez oublié de saisir le channel de votre équipement',__FILE__));
+      }
     }
 
     public function postUpdate() {
+      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+      $this->getMotorStructure($motorStructure);
 
+      foreach ($motorStructure as $key => $value) {
+        log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' in process');
+
+        $elerohaCmd = $this->getCmd(null, $value['id']);
+        if (!is_object($elerohaCmd)){
+          $elerohaCmd=new elerohaCmd();
+          $elerohaCmd->setLogicalId($value['id']);
+          log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' created');
+        }
+
+        $elerohaCmd->setName($value['name']);
+        $elerohaCmd->setEqLogic_id($this->id);
+        for($i=0;$i<count($value['configuration']);$i++){
+          $elerohaCmd->setConfiguration($value['configuration'][$i]['k1'], $value['configuration'][$i]['k2']);
+        }
+        $elerohaCmd->setType($value['type']);
+        $elerohaCmd->setSubType($value['subtype']);
+        $elerohaCmd->setIsHistorized($value['historized']);
+        $elerohaCmd->setIsVisible($value['visible']);
+        if(trim($value['unite'])!=''){
+          $elerohaCmd->setUnite($value['unite']);
+        }
+        if(array_key_exists('message_placeholder', $value)===true){
+          $elerohaCmd->setDisplay('message_placeholder', $value['message_placeholder']);
+        }
+        if(array_key_exists('title_disable', $value)===true){
+          $elerohaCmd->setDisplay('title_disable', $value['title_disable']);
+        }
+
+        $elerohaCmd->save();
+        log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' saved');
+        unset($elerohaCmd);
+      }
+      unset($value);
+      unset($motorStructure);
     }
 
     public function preRemove() {
@@ -207,6 +327,33 @@ class elerohaCmd extends cmd {
      */
 
     public function execute($_options = array()) {
+      log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' LogicalId: '. $this->getLogicalId());
+      log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' options: '. json_encode($_options));
+
+      if ( $this->GetType = "action" ){
+        log::add('eleroha', 'debug',   $this->getConfiguration('actionCmd'));
+        switch ($this->getConfiguration('actionCmd')) {
+          case 'getInfo':
+            $this->getEqLogic()->getInfo();
+            break;
+          case 'setup':
+          case 'setdown':
+          case 'setstop':
+          case 'settilt':
+          case 'setintermediate':
+
+            $socket = socket_create(AF_INET, SOCK_STREAM, 0);
+            socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
+            socket_write($socket, trim($message), strlen(trim($message)));
+            socket_close($socket);
+
+            break;
+          default:
+            throw new Exception(__('Commande non implémentée actuellement', __FILE__));
+        }
+      }else{
+        throw new Exception(__('Commande non implémentée actuellement', __FILE__));
+      }
 
     }
 

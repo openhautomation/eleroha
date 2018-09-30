@@ -1,0 +1,3 @@
+JEEDOM_COM = ''
+KNOWN_DEVICES = {}
+INCLUDE_MODE = False

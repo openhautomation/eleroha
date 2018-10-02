@@ -24,6 +24,7 @@ import signal
 from optparse import OptionParser
 from os.path import join
 import json
+import binascii
 
 try:
 	from jeedom.jeedom import *
@@ -32,7 +33,73 @@ except ImportError:
 	sys.exit(1)
 
 # ----------------------------------------------------------------------------
+def makeCS(frame):
+	checksumNumber=0
+	for elm in frame:
+		checksumNumber=checksumNumber+int(elm, 16)
 
+	upperBound=256
+	while checksumNumber > upperBound:
+	    upperBound=upperBound+256
+	checksumNumber=upperBound-checksumNumber
+
+	frame.append(format(checksumNumber, '02x'))
+# ----------------------------------------------------------------------------
+def decodeAck(rowframe, decoded):
+    frame=[]
+    for elm in rowframe:
+        frame.append( "%02x" % ord( str(elm) ) )
+
+    ackcs=frame[-1]
+    frame=frame[:-1]
+	makeCS(frame)
+
+    if frame[-1] == ackcs:
+        if frame[3]=='00':
+            decoded.append(int(frame[4], 16))
+        else:
+            decoded.append(int(frame[3], 16))
+        decoded.append(frame[5])
+		return True
+    else:
+        return False
+# ----------------------------------------------------------------------------
+def easyCheck(frame):
+	frame.append('aa')
+	frame.append('02')
+	frame.append('4a')
+	makeCS(frame)
+# ----------------------------------------------------------------------------
+def easySend(channel, cmd, frame):
+	frame.append('aa')
+	frame.append('05')
+	frame.append('4c')
+	if channel<=8:
+		frame.append('00')
+		frame.append(format(2 ** (channel-1), '02x'))
+	else:
+		frame.append(format(2 ** (channel-1-8), '02x'))
+		frame.append('00')
+
+	frame.append(cmd)
+	makeCS(frame)
+	return True
+# ----------------------------------------------------------------------------
+def easyInfo(channel, frame):
+	frame.append('aa')
+	frame.append('04')
+	frame.append('4e')
+	if channel<=8:
+		frame.append('00')
+		frame.append(format(2 ** (channel-1), '02x'))
+	else:
+		frame.append(format(2 ** (channel-1-8), '02x'))
+		frame.append('00')
+
+	makeCS(frame)
+	return True
+# ----------------------------------------------------------------------------
+# read from Jeedom
 def read_socket():
 	try:
 		global JEEDOM_SOCKET_MESSAGE
@@ -43,40 +110,47 @@ def read_socket():
 				logging.error("Invalid apikey from socket : " + str(message))
 				return
 
-			if message['cmd'] == 'send':
-				if isinstance(message['data'], list):
-					for data in message['data']:
-						try:
-							send_eleroha(data)
-						except Exception, e:
-							logging.error('Send command to rfxcom error : '+str(e))
-				else:
-					try:
-						send_eleroha(message['data'])
-					except Exception, e:
-						logging.error('Send command to rfxcom error : '+str(e))
+			frame=[]
+			send=False
+			if message['cmd'] == 'setup':
+				send=easySend(message['device'], '20', frame)
+			elif message['cmd'] == 'setdown':
+				send=easySend(message['device'], '40', frame)
+			elif message['cmd'] == 'setstop':
+				send=easySend(message['device'], '10', frame)
+			elif message['cmd'] == 'settilt':
+				send=easySend(message['device'], '24', frame)
+			elif message['cmd'] == 'setintermediate':
+				send=easySend(message['device'], '44', frame)
+			elif message['cmd'] == 'add':
+				logging.debug('SOCKET-READ------Add device : '+str(message['device']))
+				globals.KNOWN_DEVICES[message['device']] = message['device']
+				send=easyInfo(message['device'], frame)
+			elif message['cmd'] == 'del':
+				del globals.KNOWN_DEVICES[message['device']]
+				logging.debug('SOCKET-READ------Del device : '+str(message['device']))
+
+			if send==True:
+				try:
+					send_eleroha(frame)
+				except Exception, e:
+					logging.error('Send command to eleroha error : '+str(e))
+
 	except Exception,e:
 		logging.error('Error on read socket : '+str(e))
 # ----------------------------------------------------------------------------
+def send_eleroha(frame):
+	tosend=join(frame)
+	jeedom_serial.flushOutput()
+	jeedom_serial.flushInput()
 
-def send_eleroha(message):
-	if test_rfxcom(message):
-		jeedom_serial.flushOutput()
-		jeedom_serial.flushInput()
-		logging.debug("Write message to serial port")
-		jeedom_serial.write(message.decode('hex') )
-		logging.debug("Write message ok : "+ jeedom_utils.ByteToHex(message.decode('hex')))
-		try:
-			logging.debug("Decode message")
-			decodePacket(message.decode('hex'))
-		except Exception, e:
-			logging.error('Unrecognizable packet : '+str(e))
-	else:
-		logging.error("Invalid message from socket.")
+	logging.debug("Write frame to serial port")
+	jeedom_serial.write(binascii.a2b_hex(tosend))
+	logging.debug("Send frame : "+ tosend)
 # ----------------------------------------------------------------------------
-
+# Read from Stick
 def read_eleroha():
-	message = None
+	frame=[]
 	try:
 		byte = jeedom_serial.read()
 	except Exception, e:
@@ -84,24 +158,18 @@ def read_eleroha():
 		if str(e) == '[Errno 5] Input/output error':
 			logging.error("Exit 1 because this exeption is fatal")
 			shutdown()
-	try:
-		if byte:
-			message = byte + jeedom_serial.readbytes(ord(byte))
-			logging.debug("Message: " + str(jeedom_utils.ByteToHex(message)))
-			if jeedom_utils.ByteToHex(message[0]) <> "00":
-				if (len(message) - 1) == ord(message[0]):
-					try:
-						decodePacket(message)
-					except Exception, e:
-						logging.error("Error: unrecognizable packet (" + jeedom_utils.ByteToHex(message) + ")"+' : '+str(e))
-					rawcmd = jeedom_utils.ByteToHex(message).replace(' ', '')
-					return rawcmd
-				else:
-					logging.error("Error: Incoming packet not valid length (" + jeedom_utils.ByteToHex(message) + ")." )
-	except OSError, e:
-		logging.error("Error in read_rfxcom on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
-# ----------------------------------------------------------------------------
 
+	if byte:
+		frame.append(byte)
+		endTimer=int(time.time())+5
+		while endTimer>int(time.time()):
+		    if jeedom_serial.inWaiting()>0:
+		        frame.append(jeedom_serial.read())
+		info=[]
+		if decodeAck(frame, info) == True:
+			if info[0] in list(globals.KNOWN_DEVICES):
+			globals.JEEDOM_COM.add_changes('devices::'+info[0],info[1])
+# ----------------------------------------------------------------------------
 def listen():
 	logging.debug("Start listening...")
 	jeedom_serial.open()
@@ -120,12 +188,10 @@ def listen():
 	except KeyboardInterrupt:
 		shutdown()
 # ----------------------------------------------------------------------------
-
 def handler(signum=None, frame=None):
 	logging.debug("Signal %i caught, exiting..." % int(signum))
 	shutdown()
 # ----------------------------------------------------------------------------
-
 def shutdown():
 	logging.debug("Shutdown")
 	logging.debug("Removing PID file " + str(_pidfile))
@@ -145,7 +211,6 @@ def shutdown():
 	sys.stdout.flush()
 	os._exit(0)
 # ----------------------------------------------------------------------------
-
 _log_level = "error"
 _socket_port = 55030
 _socket_host = '127.0.0.1'

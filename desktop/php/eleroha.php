@@ -32,7 +32,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				<span style="font-size : 1.1em;position:relative; top : 15px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;color:#767676"><center>{{Configuration}}</center></span>
 			</div>
 		</div>
-		<legend><i class="fa fa-bolt"></i>  {{Mes poêles}}</legend>
+		<legend><i class="fa fa-bolt"></i>  {{Mes équipements Elero}}</legend>
 		<div class="eqLogicThumbnailContainer">
 			<?php
 				foreach ($eqLogics as $eqLogic) {

@@ -29,3 +29,5 @@ $result = json_decode(file_get_contents("php://input"), true);
 if (!is_array($result)) {
 	die();
 }
+
+log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' callback called');

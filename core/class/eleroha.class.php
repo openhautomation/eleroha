@@ -21,79 +21,8 @@ require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class eleroha extends eqLogic {
 
-  private function getMotorStructure(&$motorStructure){
-    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
-
-    $motorStructure=array(
-      //Set motor Up
-      'up'=>array(
-        'name'=>__('Monter', __FILE__),
-        'id'=>'up',
-        'type'=>'action',
-        'subtype'=>'message',
-        'message_placeholder'=> __('Monter', __FILE__),
-        'title_disable'=> 1,
-        'historized'=>0,
-        'visible'=>1,
-        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setup')),
-        'unite'=>''
-      ),
-      //Set motor Down
-      'down'=>array(
-        'name'=>__('Descendre', __FILE__),
-        'id'=>'down',
-        'type'=>'action',
-        'subtype'=>'message',
-        'message_placeholder'=> __('Descendre', __FILE__),
-        'title_disable'=> 1,
-        'historized'=>0,
-        'visible'=>1,
-        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setdown')),
-        'unite'=>''
-      ),
-      //Set motor Stop
-      'stop'=>array(
-        'name'=>__('Stop', __FILE__),
-        'id'=>'stop',
-        'type'=>'action',
-        'subtype'=>'message',
-        'message_placeholder'=> __('Stop', __FILE__),
-        'title_disable'=> 1,
-        'historized'=>0,
-        'visible'=>1,
-        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setstop')),
-        'unite'=>''
-      ),
-      //Set motor Tilt position
-      'tilt'=>array(
-        'name'=>__('Ventillation', __FILE__),
-        'id'=>'tilt',
-        'type'=>'action',
-        'subtype'=>'message',
-        'message_placeholder'=> __('Ventillation', __FILE__),
-        'title_disable'=> 1,
-        'historized'=>0,
-        'visible'=>1,
-        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'settilt')),
-        'unite'=>''
-      ),
-      //Set motor Intermediate position
-      'intermediate'=>array(
-        'name'=>__('Position intermédiaire', __FILE__),
-        'id'=>'intermediate',
-        'type'=>'action',
-        'subtype'=>'message',
-        'message_placeholder'=> __('Position intermédiaire', __FILE__),
-        'title_disable'=> 1,
-        'historized'=>0,
-        'visible'=>1,
-        'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setintermediate')),
-        'unite'=>''
-      )
-    );
-  )
-
   public static function deamon_info(){
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
     $return = array();
     $return['log'] = 'eleroha';
     $return['state'] = 'nok';
@@ -120,6 +49,7 @@ class eleroha extends eqLogic {
 	}
 
   public static function deamon_start($_debug = false){
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
     self::deamon_stop();
     $deamon_info = self::deamon_info();
     if ($deamon_info['launchable'] != 'ok') {
@@ -130,10 +60,11 @@ class eleroha extends eqLogic {
     if ($port != 'auto') {
       $port = jeedom::getUsbMapping($port);
     }
-    $eleroha_path = realpath(dirname(__FILE__) . '/../../resources/elerohad');
+    $eleroha_path = realpath(dirname(__FILE__) . '/../../ressources/elerohad');
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' deamon path: ' .$eleroha_path );
 
     $protocol = trim($protocol, ',');
-    $cmd = '/usr/bin/python ' . $eleroha_path . '/eleroha.py';
+    $cmd = '/usr/bin/python ' . $eleroha_path . '/elerohad.py';
     $cmd .= ' --loglevel ' . log::convertLogLevel(log::getLogLevel('eleroha'));
 		$cmd .= ' --device ' . $port;
 		$cmd .= ' --socketport ' . config::byKey('socketport', 'eleroha');
@@ -165,25 +96,18 @@ class eleroha extends eqLogic {
   }
 
   public static function deamon_stop(){
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
     $pid_file = jeedom::getTmpFolder('eleroha') . '/deamon.pid';
     if (file_exists($pid_file)) {
       $pid = intval(trim(file_get_contents($pid_file)));
       system::kill($pid);
     }
-    system::kill('eleroha.py');
+    system::kill('elerohad.py');
     system::fuserk(config::byKey('socketport', 'eleroha'));
     $port = config::byKey('port', 'eleroha');
     system::fuserk(jeedom::getUsbMapping($port));
     sleep(1);
   }
-
-  public static function changeIncludeState($_state) {
-		$value = json_encode(array('apikey' => jeedom::getApiKey('eleroha'), 'cmd' => 'include_mode', 'state' => $_state));
-		$socket = socket_create(AF_INET, SOCK_STREAM, 0);
-		socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
-		socket_write($socket, $value, strlen($value));
-		socket_close($socket);
-	}
     /*     * *************************Attributs****************************** */
 
 
@@ -215,6 +139,88 @@ class eleroha extends eqLogic {
 
 
     /*     * *********************Méthodes d'instance************************* */
+    private function getMotorStructure(&$motorStructure){
+      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+
+      $motorStructure=array(
+        //Set motor Up
+        'up'=>array(
+          'name'=>__('Monter', __FILE__),
+          'id'=>'up',
+          'type'=>'action',
+          'subtype'=>'other',
+          'message_placeholder'=> __('Monter', __FILE__),
+          'title_disable'=> 1,
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setup'), array('k1'=>'device', 'k2'=>'')),
+          'unite'=>''
+        ),
+        //Set motor Down
+        'down'=>array(
+          'name'=>__('Descendre', __FILE__),
+          'id'=>'down',
+          'type'=>'action',
+          'subtype'=>'other',
+          'message_placeholder'=> __('Descendre', __FILE__),
+          'title_disable'=> 1,
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setdown'), array('k1'=>'device', 'k2'=>'')),
+          'unite'=>''
+        ),
+        //Set motor Stop
+        'stop'=>array(
+          'name'=>__('Stop', __FILE__),
+          'id'=>'stop',
+          'type'=>'action',
+          'subtype'=>'other',
+          'message_placeholder'=> __('Stop', __FILE__),
+          'title_disable'=> 1,
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setstop'), array('k1'=>'device', 'k2'=>'')),
+          'unite'=>''
+        ),
+        //Set motor Tilt position
+        'tilt'=>array(
+          'name'=>__('Ventillation', __FILE__),
+          'id'=>'tilt',
+          'type'=>'action',
+          'subtype'=>'other',
+          'message_placeholder'=> __('Ventillation', __FILE__),
+          'title_disable'=> 1,
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'settilt'), array('k1'=>'device', 'k2'=>'')),
+          'unite'=>''
+        ),
+        //Set motor Intermediate position
+        'intermediate'=>array(
+          'name'=>__('Position intermédiaire', __FILE__),
+          'id'=>'intermediate',
+          'type'=>'action',
+          'subtype'=>'other',
+          'message_placeholder'=> __('Position intermédiaire', __FILE__),
+          'title_disable'=> 1,
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setintermediate'), array('k1'=>'device', 'k2'=>'')),
+          'unite'=>''
+        ),
+        'status'=>array(
+          'name'=>__('Etat', __FILE__),
+          'id'=>'status',
+          'parent'=>'0',
+          'type'=>'info',
+          'subtype'=>'string',
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(),
+          'unite'=>''
+        )
+      );
+    }
 
     public function preInsert() {
 
@@ -256,7 +262,11 @@ class eleroha extends eqLogic {
         $elerohaCmd->setName($value['name']);
         $elerohaCmd->setEqLogic_id($this->id);
         for($i=0;$i<count($value['configuration']);$i++){
-          $elerohaCmd->setConfiguration($value['configuration'][$i]['k1'], $value['configuration'][$i]['k2']);
+          if($value['configuration'][$i]['k1']=='device'){
+            $elerohaCmd->setConfiguration($value['configuration'][$i]['k1'], $this->getConfiguration('channel'));
+          }else{
+            $elerohaCmd->setConfiguration($value['configuration'][$i]['k1'], $value['configuration'][$i]['k2']);
+          }
         }
         $elerohaCmd->setType($value['type']);
         $elerohaCmd->setSubType($value['subtype']);
@@ -331,17 +341,18 @@ class elerohaCmd extends cmd {
       log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' options: '. json_encode($_options));
 
       if ( $this->GetType = "action" ){
-        log::add('eleroha', 'debug',   $this->getConfiguration('actionCmd'));
+        log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Action: '.$this->getConfiguration('actionCmd'));
         switch ($this->getConfiguration('actionCmd')) {
-          case 'getInfo':
-            $this->getEqLogic()->getInfo();
-            break;
           case 'setup':
           case 'setdown':
           case 'setstop':
           case 'settilt':
           case 'setintermediate':
 
+            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'device'=>$this->getConfiguration('device'), 'cmd' => $this->getConfiguration('actionCmd') );
+            $message = trim(json_encode($data));
+
+            log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);
             $socket = socket_create(AF_INET, SOCK_STREAM, 0);
             socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
             socket_write($socket, trim($message), strlen(trim($message)));
@@ -354,7 +365,6 @@ class elerohaCmd extends cmd {
       }else{
         throw new Exception(__('Commande non implémentée actuellement', __FILE__));
       }
-
     }
 
     /*     * **********************Getteur Setteur*************************** */

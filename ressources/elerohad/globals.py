@@ -1,3 +1,14 @@
 JEEDOM_COM = ''
 KNOWN_DEVICES = {}
-PENDING_ACTION = False
+device = ''
+serial_rate = 38400
+serial_timeout = 0
+socket_port = 55030
+socket_host = '127.0.0.1'
+protocol = None
+pidfile = '/tmp/elerohad.pid'
+callback = ''
+cycle = 0.3
+apikey = ''
+log_level = "error"
+daemonname=''

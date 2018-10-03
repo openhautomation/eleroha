@@ -69,7 +69,8 @@ class eleroha extends eqLogic {
 		$cmd .= ' --device ' . $port;
 		$cmd .= ' --socketport ' . config::byKey('socketport', 'eleroha');
 		$cmd .= ' --sockethost 127.0.0.1';
-		$cmd .= ' --callback ' . network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/blea/core/php/jeeEleroha.php';
+    $cmd .= ' --callback ' . network::getNetworkAccess('internal') . '/plugins/eleroha/core/php/jeeEleroha.php';
+		//$cmd .= ' --callback ' . network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/eleroha/core/php/jeeEleroha.php';
 		$cmd .= ' --apikey ' . jeedom::getApiKey('eleroha');
 		$cmd .= ' --daemonname local';
 		$cmd .= ' --pid ' . jeedom::getTmpFolder('eleroha') . '/deamon.pid';
@@ -210,7 +211,7 @@ class eleroha extends eqLogic {
         ),
         'status'=>array(
           'name'=>__('Etat', __FILE__),
-          'id'=>'status',
+          'id'=>'',
           'parent'=>'0',
           'type'=>'info',
           'subtype'=>'string',
@@ -251,6 +252,10 @@ class eleroha extends eqLogic {
 
       foreach ($motorStructure as $key => $value) {
         log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' in process');
+
+        if($key=='status'){
+          $value['id']=$this->getConfiguration('channel');
+        }
 
         $elerohaCmd = $this->getCmd(null, $value['id']);
         if (!is_object($elerohaCmd)){
@@ -337,7 +342,10 @@ class elerohaCmd extends cmd {
      */
 
     public function execute($_options = array()) {
+
+      $eqLogic = $this->getEqlogic();
       log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' LogicalId: '. $this->getLogicalId());
+      log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' EqLogic_id: '. $this->getEqLogic_id());
       log::add('eleroha', 'debug',  __FUNCTION__ . '()-ln:'.__LINE__.' options: '. json_encode($_options));
 
       if ( $this->GetType = "action" ){
@@ -349,7 +357,9 @@ class elerohaCmd extends cmd {
           case 'settilt':
           case 'setintermediate':
 
-            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'device'=>$this->getConfiguration('device'), 'cmd' => $this->getConfiguration('actionCmd') );
+            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id()));
+            //$data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'data' => array('id'=>'1', 'command'=>'test'));
+
             $message = trim(json_encode($data));
 
             log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);

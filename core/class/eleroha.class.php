@@ -198,11 +198,11 @@ class eleroha extends eqLogic {
         ),
         //Set motor Intermediate position
         'intermediate'=>array(
-          'name'=>__('Position intermédiaire', __FILE__),
+          'name'=>__('Intermédiaire', __FILE__),
           'id'=>'intermediate',
           'type'=>'action',
           'subtype'=>'other',
-          'message_placeholder'=> __('Position intermédiaire', __FILE__),
+          'message_placeholder'=> __('Intermédiaire', __FILE__),
           'title_disable'=> 1,
           'historized'=>0,
           'visible'=>1,

@@ -143,6 +143,15 @@ def read_socket():
             elif message['cmd'] == 'setup':
                 send=easySend(int(message['device']['id']), '20', frame)
 
+            elif message['cmd'] == 'setstop':
+                send=easySend(int(message['device']['id']), '10', frame)
+
+            elif message['cmd'] == 'settilt':
+                send=easySend(int(message['device']['id']), '24', frame)
+
+            elif message['cmd'] == 'setintermediate':
+                send=easySend(int(message['device']['id']), '44', frame)
+
             if send==True:
                 logging.debug('SOCKET-READ------BILT frame : '+str(frame))
 
@@ -150,36 +159,6 @@ def read_socket():
                     send_eleroha(frame)
                 except Exception, e:
                     logging.error('Send command to eleroha error : '+str(e))
-
-            #frame=[]
-            #send=False
-            #if message['cmd'] == 'setup':
-            #    send=easySend(message['device'], '20', frame)
-            #elif message['cmd'] == 'setdown':
-            #    if 'id' in message['device']:
-            #        globals.KNOWN_DEVICES[str(message['device']['id'])] = message['device']
-            #    send=easySend(message['device'], '40', frame)
-            #elif message['cmd'] == 'setstop':
-            #    send=easySend(message['device'], '10', frame)
-            #elif message['cmd'] == 'settilt':
-            #    send=easySend(message['device'], '24', frame)
-            #elif message['cmd'] == 'setintermediate':
-            #    send=easySend(message['device'], '44', frame)
-            #elif message['cmd'] == 'add':
-            #    logging.debug('SOCKET-READ------Add device : '+str(message['device']))
-            #    if 'id' in message['device']:
-            #        globals.KNOWN_DEVICES[message['device']['id']] = message['device']
-            #    send=easyInfo(message['device'], frame)
-            #elif message['cmd'] == 'del':
-            #    logging.debug('SOCKET-READ------Remove device : '+str(message['device']))
-            #    if message['device']['id'] in globals.KEEPED_CONNECTION:
-            #        del globals.KEEPED_CONNECTION[message['device']['id']]
-
-            #if send==True:
-            #    try:
-            #        send_eleroha(frame)
-            #    except Exception, e:
-            #        logging.error('Send command to eleroha error : '+str(e))
 
     except Exception,e:
         logging.error('Error on read socket : '+str(e))

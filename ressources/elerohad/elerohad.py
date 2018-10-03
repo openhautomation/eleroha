@@ -131,10 +131,6 @@ def read_socket():
 
             globals.KNOWN_DEVICES[str(message['device']['id'])] = message['device']
 
-            #if str(message['device']['id']) not in globals.KNOWN_DEVICE:
-            #    logging.debug('SOCKET-READ------Add device : '+str(message['device']))
-            #    globals.KNOWN_DEVICES[str(message['device']['id'])] = message['device']
-
             frame=[]
             send=False
             if message['cmd'] == 'setdown':

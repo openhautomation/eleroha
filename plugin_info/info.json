@@ -6,7 +6,7 @@
     "author" : "OpenHomeAutomation",
     "require" : "3.2",
     "category" : "communication",
-    "hasDependency" : false,
+    "hasDependency" : true,
     "hasOwnDeamon" : true,
     "maxDependancyInstallTime" : 0,
     "changelog" : "https://openhautomation.github.io/eleroho/#language#/changelog",

@@ -109,6 +109,22 @@ class eleroha extends eqLogic {
     system::fuserk(jeedom::getUsbMapping($port));
     sleep(1);
   }
+
+  public static function dependancy_info() {
+		$return = array();
+		$return['progress_file'] = jeedom::getTmpFolder('eleroha') . '/dependance';
+		if (exec(system::getCmdSudo() . system::get('cmd_check') . '-E "python\-serial|python\-requests|python\-pyudev" | wc -l') >= 3) {
+			$return['state'] = 'ok';
+		} else {
+			$return['state'] = 'nok';
+		}
+		return $return;
+	}
+
+	public static function dependancy_install() {
+		log::remove(__CLASS__ . '_update');
+		return array('script' => dirname(__FILE__) . '/../../resources/install_#stype#.sh ' . jeedom::getTmpFolder('eleroha') . '/dependance', 'log' => log::getPathToLog(__CLASS__ . '_update'));
+	}
     /*     * *************************Attributs****************************** */
 
 

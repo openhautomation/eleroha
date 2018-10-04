@@ -1,2 +1,1 @@
-# eleroha
-Plugin Jeedom de communication avec les stores équipés d'un système Elero
+**Le plugin Eleroha** interface les stores équipés d'un système Elero avec Jeedom.

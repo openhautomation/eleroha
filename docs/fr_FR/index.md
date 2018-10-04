@@ -7,9 +7,9 @@ Présentation
 
 **Prérequis**
 
->Pour fonctionner Eleroha nécessite un stick USB Elero afin d'assurer la communication entre Jeedom et vos équipements Elero.
+>Pour fonctionner, Eleroha nécessite un stick USB Elero afin d'assurer la communication entre Jeedom et vos équipements Elero.
 
-Aussi, vous deves préhalablement :
+Aussi, vous devez préhalablement :
 1. Associer vos stores Elero avec le stick USB comme cela est décrit dans la documentation Elero.
 Vous noterez les channels qui correspondent à vos stores. Cette information vous sera demandée lors de la création de vos équipements dans Jeedom.
 2. Placer le stick USB dans un port USB libre de votre box Jeedom

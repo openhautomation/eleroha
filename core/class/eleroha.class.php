@@ -21,6 +21,8 @@ require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class eleroha extends eqLogic {
 
+  public static $_widgetPossibility = array('custom' => true);
+
   public static function deamon_info(){
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
     $return = array();
@@ -60,7 +62,7 @@ class eleroha extends eqLogic {
     if ($port != 'auto') {
       $port = jeedom::getUsbMapping($port);
     }
-    $eleroha_path = realpath(dirname(__FILE__) . '/../../ressources/elerohad');
+    $eleroha_path = realpath(dirname(__FILE__) . '/../../resources/elerohad');
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' deamon path: ' .$eleroha_path );
 
     $protocol = trim($protocol, ',');
@@ -110,6 +112,18 @@ class eleroha extends eqLogic {
     sleep(1);
   }
 
+  public static function sendIdToDeamon() {
+    foreach (self::byType('eleroha') as $eqLogic) {
+      $eqLogic->allowDevice();
+      usleep(500);
+    }
+  }
+
+	public static function dependancy_install() {
+		log::remove(__CLASS__ . '_update');
+		return array('script' => dirname(__FILE__) . '/../../resources/install_#stype#.sh ' . jeedom::getTmpFolder('eleroha') . '/dependance', 'log' => log::getPathToLog(__CLASS__ . '_update'));
+	}
+
   public static function dependancy_info() {
 		$return = array();
 		$return['progress_file'] = jeedom::getTmpFolder('eleroha') . '/dependance';
@@ -119,11 +133,6 @@ class eleroha extends eqLogic {
 			$return['state'] = 'nok';
 		}
 		return $return;
-	}
-
-	public static function dependancy_install() {
-		log::remove(__CLASS__ . '_update');
-		return array('script' => dirname(__FILE__) . '/../../resources/install_#stype#.sh ' . jeedom::getTmpFolder('eleroha') . '/dependance', 'log' => log::getPathToLog(__CLASS__ . '_update'));
 	}
 
   public static function cron15() {

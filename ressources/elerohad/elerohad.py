@@ -148,6 +148,9 @@ def read_socket():
             elif message['cmd'] == 'setintermediate':
                 send=easySend(int(message['device']['id']), '44', frame)
 
+            elif message['cmd'] == 'getinfo':
+                send=easyInfo(int(message['device']['id']), frame)
+
             if send==True:
                 logging.debug('SOCKET-READ------BILT frame : '+str(frame))
 
@@ -174,7 +177,7 @@ def read_eleroha():
     try:
         byte = jeedom_serial.read()
     except Exception, e:
-        logging.error("Error in read_rfxcom: " + str(e))
+        logging.error("Error in read_eleroha: " + str(e))
         if str(e) == '[Errno 5] Input/output error':
             logging.error("Exit 1 because this exeption is fatal")
             shutdown()
@@ -199,35 +202,7 @@ def read_eleroha():
                     logging.error("No key found in KNOWN_DEVICES")
 
     except OSError, e:
-        logging.error("Error in read_rfxcom on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
-
-def old_read_eleroha():
-    try:
-        byte = jeedom_serial.read()
-    except Exception, e:
-        logging.error("Error in read_eleroha: " + str(e))
-        if str(e) == '[Errno 5] Input/output error':
-            logging.error("Exit 1 because this exeption is fatal")
-            shutdown()
-
-    if byte:
-        logging.error("READ_ELEROHA starting to read")
-        rowframe=[]
-        rowframe.append(byte)
-
-        endTimer=int(time.time())+5
-        while endTimer>int(time.time()):
-            byte = jeedom_serial.read()
-            if byte:
-                rowframe.append(rowframe)
-
-        logging.error("READ_ELEROHA rowframe: "+str(rowframe))
-        #info=[]
-        #if decodeAck(rowframe, info) == True:
-        #    logging.error("READ_ELEROHA ACK ok")
-        #    if info[0] in list(globals.KNOWN_DEVICES):
-        #        logging.error("READ_ELEROHA OK call Jeedom")
-        #        globals.JEEDOM_COM.add_changes('devices::'+info[0],info[1])
+        logging.error("Error in read_eleroha on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
 # ----------------------------------------------------------------------------
 def listen():
 	logging.debug("Start listening...")

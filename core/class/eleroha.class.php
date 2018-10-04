@@ -225,15 +225,27 @@ class eleroha extends eqLogic {
           'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setintermediate'), array('k1'=>'device', 'k2'=>'')),
           'unite'=>''
         ),
-        'status'=>array(
+        'info'=>array(
           'name'=>__('Etat', __FILE__),
-          'id'=>'',
+          'id'=>'info',
           'parent'=>'0',
           'type'=>'info',
           'subtype'=>'string',
           'historized'=>0,
           'visible'=>1,
           'configuration'=>array(),
+          'unite'=>''
+        ),
+        //Refesh action
+        'refresh'=>array(
+          'name'=>__('Rafraichir', __FILE__),
+          'id'=>'refresh',
+          'parent'=>'0',
+          'type'=>'action',
+          'subtype'=>'other',
+          'historized'=>0,
+          'visible'=>1,
+          'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'getinfo'), array('k1'=>'device', 'k2'=>'')),
           'unite'=>''
         )
       );
@@ -269,9 +281,11 @@ class eleroha extends eqLogic {
       foreach ($motorStructure as $key => $value) {
         log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' in process');
 
-        if($key=='status'){
+        /*
+        if($key=='info'){
           $value['id']=$this->getConfiguration('channel');
         }
+        */
 
         $elerohaCmd = $this->getCmd(null, $value['id']);
         if (!is_object($elerohaCmd)){
@@ -317,6 +331,54 @@ class eleroha extends eqLogic {
 
     public function postRemove() {
 
+    }
+
+    public function toHtml($_version = 'dashboard') {
+      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+      $replace = $this->preToHtml($_version);
+      if (!is_array($replace)) {
+        return $replace;
+      }
+      $version = jeedom::versionAlias($_version);
+
+      $refresh = $this->getCmd(null, 'refresh');
+      $replace['#refresh_id#'] = (is_object($refresh)) ? $refresh->getId() : '';
+
+      $info = $this->getCmd(null,'info');
+      $replace['#info#'] = (is_object($info)) ? $info->execCmd() : '';
+      $replace['#info_id#'] = is_object($info) ? $info->getId() : '';
+      $replace['#info_name#'] = is_object($info) ? $info->getName() : '';
+      $replace['#info_display#'] = (is_object($info) && $info->getIsVisible()) ? "" : "display: none;";
+
+      $up = $this->getCmd(null,'up');
+      $replace['#up_id#'] = is_object($up) ? $up->getId() : '';
+      $replace['#up_name#'] = is_object($up) ? $up->getName() : '';
+      $replace['#up_display#'] = (is_object($up) && $up->getIsVisible()) ? "" : "display: none;";
+
+      $down = $this->getCmd(null,'down');
+      $replace['#down_id#'] = is_object($down) ? $down->getId() : '';
+      $replace['#down_name#'] = is_object($down) ? $down->getName() : '';
+      $replace['#down_display#'] = (is_object($down) && $down->getIsVisible()) ? "" : "display: none;";
+
+      $stop = $this->getCmd(null,'stop');
+      $replace['#stop_id#'] = is_object($stop) ? $stop->getId() : '';
+      $replace['#stop_name#'] = is_object($stop) ? $stop->getName() : '';
+      $replace['#stop_display#'] = (is_object($stop) && $stop->getIsVisible()) ? "" : "display: none;";
+
+      $tilt = $this->getCmd(null,'tilt');
+      $replace['#tilt_id#'] = is_object($tilt) ? $tilt->getId() : '';
+      $replace['#tilt_name#'] = is_object($tilt) ? $tilt->getName() : '';
+      $replace['#tilt_display#'] = (is_object($tilt) && $tilt->getIsVisible()) ? "" : "display: none;";
+
+      $intermediate = $this->getCmd(null,'intermediate');
+      $replace['#intermediate_id#'] = is_object($intermediate) ? $intermediate->getId() : '';
+      $replace['#intermediate_name#'] = is_object($intermediate) ? $intermediate->getName() : '';
+      $replace['#intermediate_display#'] = (is_object($intermediate) && $intermediate->getIsVisible()) ? "" : "display: none;";
+
+      $html = template_replace($replace, getTemplate('core', $_version, 'eleroha','eleroha'));
+
+      cache::set('elerohaWidget' . $_version . $this->getId(), $html, 0);
+      return $html;
     }
 
     /*
@@ -367,15 +429,15 @@ class elerohaCmd extends cmd {
       if ( $this->GetType = "action" ){
         log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Action: '.$this->getConfiguration('actionCmd'));
         switch ($this->getConfiguration('actionCmd')) {
+          case 'getinfo':
           case 'setup':
           case 'setdown':
           case 'setstop':
           case 'settilt':
           case 'setintermediate':
 
-            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id()));
-            //$data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'data' => array('id'=>'1', 'command'=>'test'));
 
+            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id()));
             $message = trim(json_encode($data));
 
             log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);

@@ -1,0 +1,66 @@
+<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#; #style#" data-category="" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" >
+  <span class="statusCmd" style="position : absolute;left : 5px; width : 30px;z-index: 1030;"></span>
+  <i class='fa fa-refresh pull-right cursor refresh' style="margin-top: 3px;margin-right: 3px;"></i>
+  <span class="cmd cmd-widget" data-cmd_id="#refresh_id#" style="display:none;"></span>
+  <center class="widget-name"><strong><a href="#eqLink#" style="font-size : 1.1em;#hideEqLogicName#">#name_display# </strong></a></center>
+  <script>
+    $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+     jeedom.cmd.execute({id: '#refresh_id#'});
+    });
+  </script>
+  <div class="tooltips#info#" data-cmd_id="#info_id#" style="padding-top:4px;margin-left:5px;#info_display#">
+      <span title="#info_name#">#info_name#: </span>
+      <span>#info#</span>
+  </div>
+  <div class="tooltips" data-cmd_id="#up_id#" style="display: inline-block;padding-top:4px;margin-left:5px;#up_display#">
+    <button class="#up_id#_clickCmd" type="button" style="background-color:#background-color#;">#up_name#</button>
+  </div>
+  <script>
+    $('.eqLogic[data-eqLogic_id=#id#] .#up_id#_clickCmd').on('click', function () {
+      $('.eqLogic[data-eqLogic_id=#id#] .statusCmd').append('<i data-eleroha="processing" class="fa fa-rss" style="margin-top: 3px;margin-right: 3px;"></i>');
+      jeedom.cmd.execute({id: '#up_id#', value: $(this).val()});
+      setTimeout(function(){$("[data-eleroha=processing]").remove();}, 2500);
+    });
+  </script>
+  <div class="tooltips" data-cmd_id="#down_id#" style="display: inline-block;padding-top:4px;margin-left:5px;#down_display#">
+    <button class="#down_id#_clickCmd" type="button" style="background-color:#background-color#;">#down_name#</button>
+  </div>
+  <script>
+    $('.eqLogic[data-eqLogic_id=#id#] .#down_id#_clickCmd').on('click', function () {
+      $('.eqLogic[data-eqLogic_id=#id#] .statusCmd').append('<i data-eleroha="processing" class="fa fa-rss" style="margin-top: 3px;margin-right: 3px;"></i>');
+      jeedom.cmd.execute({id: '#down_id#', value: $(this).val()});
+      setTimeout(function(){$("[data-eleroha=processing]").remove();}, 2500);
+    });
+  </script>
+  <div class="tooltips" data-cmd_id="#stop_id#" style="display: inline-block;padding-top:4px;margin-left:5px;#stop_display#">
+    <button class="#stop_id#_clickCmd" type="button" style="background-color:#background-color#;">#stop_name#</button>
+  </div>
+  <script>
+    $('.eqLogic[data-eqLogic_id=#id#] .#stop_id#_clickCmd').on('click', function () {
+      $('.eqLogic[data-eqLogic_id=#id#] .statusCmd').append('<i data-eleroha="processing" class="fa fa-rss" style="margin-top: 3px;margin-right: 3px;"></i>');
+      jeedom.cmd.execute({id: '#stop_id#', value: $(this).val()});
+      setTimeout(function(){$("[data-eleroha=processing]").remove();}, 2500);
+    });
+  </script>
+  <div></div>
+  <div class="tooltips" data-cmd_id="#tilt_id#" style="display: inline-block;padding-top:4px;margin-left:5px;#tilt_display#">
+    <button class="#tilt_id#_clickCmd" type="button" style="background-color:#background-color#;">#tilt_name#</button>
+  </div>
+  <script>
+    $('.eqLogic[data-eqLogic_id=#id#] .#tilt_id#_clickCmd').on('click', function () {
+      $('.eqLogic[data-eqLogic_id=#id#] .statusCmd').append('<i data-eleroha="processing" class="fa fa-rss" style="margin-top: 3px;margin-right: 3px;"></i>');
+      jeedom.cmd.execute({id: '#tilt_id#', value: $(this).val()});
+      setTimeout(function(){$("[data-eleroha=processing]").remove();}, 2500);
+    });
+  </script>
+  <div class="tooltips" data-cmd_id="#intermediate_id#" style="display: inline-block;padding-top:4px;margin-left:5px;#intermediate_display#">
+    <button class="#intermediate_id#_clickCmd" type="button" style="background-color:#background-color#;">#intermediate_name#</button>
+  </div>
+  <script>
+    $('.eqLogic[data-eqLogic_id=#id#] .#intermediate_id#_clickCmd').on('click', function () {
+      $('.eqLogic[data-eqLogic_id=#id#] .statusCmd').append('<i data-eleroha="processing" class="fa fa-rss" style="margin-top: 3px;margin-right: 3px;"></i>');
+      jeedom.cmd.execute({id: '#intermediate_id#', value: $(this).val()});
+      setTimeout(function(){$("[data-eleroha=processing]").remove();}, 2500);
+    });
+  </script>
+</div>

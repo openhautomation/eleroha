@@ -39,7 +39,7 @@ if(array_key_exists('info', $result)===true){
   $eleroha = eleroha::byId($result['info']['EqLogic_id']);
   if (is_object($eleroha)) {
     log::add('eleroha','debug','Obj found, saving');
-    $cmd = $eleroha->getCmd(null, $result['info']['channel']);
+    $cmd = $eleroha->getCmd(null, 'info');
     switch ($result['info']['value']) {
       case '00':
         $result['info']['value']=__('Aucune information', __FILE__);

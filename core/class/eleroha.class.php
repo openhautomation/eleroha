@@ -125,6 +125,30 @@ class eleroha extends eqLogic {
 		log::remove(__CLASS__ . '_update');
 		return array('script' => dirname(__FILE__) . '/../../resources/install_#stype#.sh ' . jeedom::getTmpFolder('eleroha') . '/dependance', 'log' => log::getPathToLog(__CLASS__ . '_update'));
 	}
+
+  public static function cron15() {
+    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
+
+    foreach (eqLogic::byType('eleroha') as $eleroha) {
+      $cmd = $eleroha->getCmd(null, 'refresh');
+      $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => 'getinfo', 'device' => array('id'=>$cmd->getConfiguration('device'), 'EqLogic_id'=>$eleroha->getId()));
+      $message = trim(json_encode($data));
+      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Params: ' . $message);
+
+      $socket = socket_create(AF_INET, SOCK_STREAM, 0);
+      socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
+      socket_write($socket, trim($message), strlen(trim($message)));
+      socket_close($socket);
+      sleep(3);
+
+      // Dashboard
+      $mc = cache::byKey('elerohaWidgetdashboard' . $eleroha->getId());
+      $mc->remove();
+      $eleroha->toHtml('dashboard');
+      $eleroha->refreshWidget();
+    }
+  }
+
     /*     * *************************Attributs****************************** */
 
 

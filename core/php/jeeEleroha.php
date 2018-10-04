@@ -97,5 +97,6 @@ if(array_key_exists('info', $result)===true){
     }
     $cmd->event($result['info']['value']);
     $cmd->save();
+    $eleroha->refreshWidget();
   }
 }

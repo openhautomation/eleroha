@@ -108,9 +108,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							</div>
 						</div>
 						<div class="form-group">
-								<label class="col-md-4 control-label">{{Channel}}</label>
+								<label class="col-md-4 control-label">{{Channel de 1 à 15}}</label>
 								<div class="col-md-8">
-										<input type="text" class="eqLogicAttr configuration form-control" data-l1key="configuration" data-l2key="channel" placeholder="Channel"/>
+										<input type="text" class="eqLogicAttr configuration form-control" data-l1key="configuration" data-l2key="channel" placeholder=""/>
 								</div>
 						</div>
 					</fieldset>

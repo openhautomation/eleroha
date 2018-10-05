@@ -51,7 +51,7 @@ def makeCS(frame):
     else:
         while checksumNumber > upperBound:
             upperBound=upperBound+256
-            checksumNumber=upperBound-checksumNumber
+        checksumNumber=upperBound-checksumNumber
 
     frame.append(format(checksumNumber, '02x'))
 # ----------------------------------------------------------------------------
@@ -69,13 +69,28 @@ def decodeAck(rowmessage, decoded):
     logging.debug('DECODEACK------ frame calculated CS: '+str(tmpframe))
 
     if frame[-1] == ackcs:
-        if frame[3]=='00':
-            decoded.append(int(frame[4], 16))
+        firstChannels=frame[3]
+        secondChannels=frame[4]
+        bytes=firstChannels+secondChannels
+        print bytes
+        bytes=int(bytes, 16)
+        print bytes
+
+        channel=1
+        while bytes != 1 and channel <= 15:
+            bytes = bytes >> 1
+            channel=channel+1
+
+        if channel<16:
+            decoded.append(channel)
+            decoded.append(frame[5])
+            logging.debug('DECODEACK------ OK channel: '+str(channel) + ' status: ' + str(frame[5]))
+            return True
         else:
-            decoded.append(int(frame[3], 16))
-        decoded.append(frame[5])
-        return True
+            logging.debug('DECODEACK------ channel: '+str(channel) + ' unknown, unable to found device')
+            return False
     else:
+        logging.debug('DECODEACK------ FAILED')
         return False
 # ----------------------------------------------------------------------------
 def easyCheck(frame):

@@ -1,0 +1,49 @@
+{
+    "plugins\/eleroha\/plugin_info\/configuration.php": {
+        "Démon": "Démon",
+        "Port Stick USB Elero": "Port Stick USB Elero",
+        "Aucun": "Aucun",
+        "Port socket interne (saisissez 55030)": "Port socket interne (saisissez 55030)"
+    },
+    "plugins\/eleroha\/desktop\/php\/eleroha.php": {
+        "Ajouter un équipement Elero": "Ajouter un équipement Elero",
+        "Rechercher": "Rechercher",
+        "Gestion": "Gestion",
+        "Ajouter": "Ajouter",
+        "Configuration": "Configuration",
+        "Mes équipements Elero": "Mes équipements Elero",
+        "Sauvegarder": "Sauvegarder",
+        "Supprimer": "Supprimer",
+        "Configuration avancée": "Configuration avancée",
+        "Equipement": "Equipement",
+        "Commandes": "Commandes",
+        "Général": "Général",
+        "Nom de l'équipement": "Nom de l'équipement",
+        "Objet parent": "Objet parent",
+        "Aucun": "Aucun",
+        "Catégorie": "Catégorie",
+        "Activer": "Activer",
+        "Visible": "Visible",
+        "Channel de 1 à 15": "Channel de 1 à 15",
+        "Nom": "Nom",
+        "Afficher\/Historiser": "Afficher\/Historiser",
+        "Type": "Type",
+        "Action": "Action"
+    },
+    "plugins\/eleroha\/core\/class\/eleroha.class.php": {
+        "Vous avez oublié de saisir le channel de votre équipement": "Vous avez oublié de saisir le channel de votre équipement",
+        "Monter": "Monter",
+        "Descendre": "Descendre",
+        "Stop": "Stop",
+        "Ventillation": "Ventillation",
+        "Intermédiaire": "Intermédiaire",
+        "Etat": "Etat",
+        "Rafraichir": "Rafraichir"
+    },
+    "plugins\/eleroha\/core\/php\/jeeEleroha.php": {
+        "Fermeture": "Fermeture",
+        "Fermé": "Fermé",
+        "Position inconnue": "Position inconnue",
+        "Ouverture": "Ouverture"
+    }
+}

@@ -76,7 +76,7 @@ class eleroha extends eqLogic {
 		$cmd .= ' --apikey ' . jeedom::getApiKey('eleroha');
 		$cmd .= ' --daemonname local';
 		$cmd .= ' --pid ' . jeedom::getTmpFolder('eleroha') . '/deamon.pid';
-    log::add('eleroha', 'info', 'Lancement démon eleroha : ' . $cmd);
+    log::add('eleroha', 'info', 'Démarrage du démon eleroha : ' . $cmd);
     exec($cmd . ' >> ' . log::getPathToLog('eleroha') . ' 2>&1 &');
     $i = 0;
     while ($i < 30) {
@@ -88,13 +88,13 @@ class eleroha extends eqLogic {
       $i++;
     }
     if ($i >= 30) {
-      log::add('eleroha', 'error', 'Impossible de lancer le démon eleroha, vérifiez le log eleroha', 'unableStartDeamon');
+      log::add('eleroha', 'error', 'Impossible de démarrer le démon eleroha, vérifiez le log eleroha', 'unableStartDeamon');
       return false;
     }
     message::removeAll('eleroha', 'unableStartDeamon');
     sleep(2);
     config::save('include_mode', 0, 'eleroha');
-    log::add('eleroha', 'info', 'Démon eleroha lancé');
+    log::add('eleroha', 'info', 'Démon eleroha demarré');
     return true;
   }
 
@@ -134,7 +134,7 @@ class eleroha extends eqLogic {
 		}
 		return $return;
 	}
-
+/*
   public static function cron15() {
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
 
@@ -157,7 +157,7 @@ class eleroha extends eqLogic {
       $eleroha->refreshWidget();
     }
   }
-
+*/
     /*     * *************************Attributs****************************** */
 
 
@@ -378,7 +378,80 @@ class eleroha extends eqLogic {
       $replace['#refresh_id#'] = (is_object($refresh)) ? $refresh->getId() : '';
 
       $info = $this->getCmd(null,'info');
-      $replace['#info#'] = (is_object($info)) ? $info->execCmd() : '';
+      $info_row=(is_object($info)) ? $info->execCmd() : '';
+      switch ($info_row) {
+        case '00':
+          $replace['#info#']=__('Aucune information', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '01':
+          $replace['#info#']=__('Ouvert', __FILE__);
+          $replace['#info_image#']='upstop.png';
+          break;
+        case '02':
+          $replace['#info#']=__('Fermé', __FILE__);
+          $replace['#info_image#']='downstop.png';
+          break;
+        case '03':
+          $replace['#info#']=__('Intermédiaire', __FILE__);
+          $replace['#info_image#']='intermediate.png';
+          break;
+        case '04':
+          $replace['#info#']=__('Ventilation', __FILE__);
+          $replace['#info_image#']='tilt.png';
+          break;
+        case '05':
+          $replace['#info#']=__('Equipement bloqué', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '06':
+          $replace['#info#']=__('Surchauffe', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '07':
+          $replace['#info#']=__('Timeout', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '08':
+          $replace['#info#']=__('Début ouverture', __FILE__);
+          $replace['#info_image#']='upstart.png';
+          break;
+        case '09':
+          $replace['#info#']=__('Début fermeture', __FILE__);
+          $replace['#info_image#']='downstart.png';
+          break;
+        case '0a':
+          $replace['#info#']=__('Ouverture', __FILE__);
+          $replace['#info_image#']='upstart.png';
+          break;
+        case '0b':
+          $replace['#info#']=__('Fermeture', __FILE__);
+          $replace['#info_image#']='downstart.png';
+          break;
+        case '0d':
+          $replace['#info#']=__('Arrêté position indéfinie', __FILE__);
+          $replace['#info_image#']='stop.png';
+          break;
+        case '0e':
+          $replace['#info#']=__('Top position stop wich is tilt position', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '0f':
+          $replace['#info#']=__('Bottom position stop wich is intermediate position', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '10':
+          $replace['#info#']=__('Equipement éteint', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        case '11':
+          $replace['#info#']=__('Equipement allumé', __FILE__);
+          $replace['#info_image#']='undef.png';
+          break;
+        default:
+          $replace['#info#']=__('Etat inconnu', __FILE__);
+          $replace['#info_image#']='undef.png';
+      }
       $replace['#info_id#'] = is_object($info) ? $info->getId() : '';
       $replace['#info_name#'] = is_object($info) ? $info->getName() : '';
       $replace['#info_display#'] = (is_object($info) && $info->getIsVisible()) ? "" : "display: none;";
@@ -470,7 +543,7 @@ class elerohaCmd extends cmd {
           case 'setintermediate':
 
 
-            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id()));
+            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id(), 'cmd'=>$this->getConfiguration('actionCmd')));
             $message = trim(json_encode($data));
 
             log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);

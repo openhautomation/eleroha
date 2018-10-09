@@ -40,61 +40,6 @@ if(array_key_exists('info', $result)===true){
   if (is_object($eleroha)) {
     log::add('eleroha','debug','Obj found, saving');
     $cmd = $eleroha->getCmd(null, 'info');
-    switch ($result['info']['value']) {
-      case '00':
-        $result['info']['value']=__('Aucune information', __FILE__);
-        break;
-      case '01':
-        $result['info']['value']=__('Ouvert', __FILE__);
-        break;
-      case '02':
-        $result['info']['value']=__('Fermé', __FILE__);
-        break;
-      case '03':
-        $result['info']['value']=__('Intermédiaire', __FILE__);
-        break;
-      case '04':
-        $result['info']['value']=__('Ventilation', __FILE__);
-        break;
-      case '05':
-        $result['info']['value']=__('Equipement bloqué', __FILE__);
-        break;
-      case '06':
-        $result['info']['value']=__('Surchauffe', __FILE__);
-        break;
-      case '07':
-        $result['info']['value']=__('Timeout', __FILE__);
-        break;
-      case '08':
-        $result['info']['value']=__('Début ouverture', __FILE__);
-        break;
-      case '09':
-        $result['info']['value']=__('Début fermeture', __FILE__);
-        break;
-      case '0a':
-        $result['info']['value']=__('Ouverture', __FILE__);
-        break;
-      case '0b':
-        $result['info']['value']=__('Fermeture', __FILE__);
-        break;
-      case '0d':
-        $result['info']['value']=__('Position inconnue', __FILE__);
-        break;
-      case '0e':
-        $result['info']['value']=__('Top position stop wich is tilt position', __FILE__);
-        break;
-      case '0f':
-        $result['info']['value']=__('Bottom position stop wich is intermediate position', __FILE__);
-        break;
-      case '10':
-        $result['info']['value']=__('Equipement éteint', __FILE__);
-        break;
-      case '11':
-        $result['info']['value']=__('Equipement allumé', __FILE__);
-        break;
-      default:
-        $result['info']['value']=__('Etat inconnu', __FILE__);
-    }
     $cmd->event($result['info']['value']);
     $cmd->save();
     $eleroha->refreshWidget();

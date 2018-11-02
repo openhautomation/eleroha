@@ -5,7 +5,7 @@
     "licence" : "AGPL",
     "author" : "OpenHomeAutomation",
     "require" : "3.2",
-    "category" : "communication",
+    "category" : "automatisation",
     "hasDependency" : true,
     "hasOwnDeamon" : true,
     "maxDependancyInstallTime" : 0,

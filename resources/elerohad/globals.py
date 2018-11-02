@@ -1,5 +1,6 @@
 JEEDOM_COM = ''
 KNOWN_DEVICES = {}
+QUEUED=[]
 device = ''
 serial_rate = 38400
 serial_timeout = 0

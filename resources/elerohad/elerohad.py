@@ -253,10 +253,10 @@ def prepare_send_eleroha(cmd, device, toqueue):
             send_eleroha(frame)
             if toqueue==1:
                 if cmd=='setup':
-                    addQueue('getinfo', device, 3, 1, None)
+                    addQueue('getinfo', device, 2, 1, None)
                     addQueue('getinfo', device, 5, 12, '01')
                 elif cmd=='setdown':
-                    addQueue('getinfo', device, 3, 1, None)
+                    addQueue('getinfo', device, 2, 1, None)
                     addQueue('getinfo', device, 5, 12, '02')
                 elif cmd=='settilt':
                     addQueue('getinfo', device, 3, 2, None)

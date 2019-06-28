@@ -9,8 +9,8 @@
     "hasDependency" : true,
     "hasOwnDeamon" : true,
     "maxDependancyInstallTime" : 0,
-    "changelog" : "https://openhautomation.github.io/eleroho/#language#/changelog",
-    "documentation" : "https://openhautomation.github.io/eleroho/#language#/",
+    "changelog" : "https://openhautomation.github.io/eleroha/#language#/changelog",
+    "documentation" : "https://openhautomation.github.io/eleroha/#language#/",
     "language" : ["fr_FR", "en_US"],
     "compatibility" : ["smart","rpi","diy"]
 }

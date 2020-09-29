@@ -30,8 +30,8 @@ Les principales fonctionnalités de Eleroha sont :
 
 **Activation et configuration**
 
->Après avoir activé le plugin il est indspensble de :
-1. Sélectionner port du stick USB Elero,
+>Après avoir activé, le plugin il est indispensable de :
+1. Sélectionner port du stick USB Elero.
 2. Saisir le port 55030.
 
 N'oubliez pas de sauvegarder.
@@ -50,4 +50,4 @@ N'oubliez pas de sauvegarder !
 
 Félicitation, vous avez terminé.
 
-Vous pouvez actualiser manuellement les informations en cliquant sur l'icone située en haut à droite du widget.
+Vous pouvez actualiser manuellement les informations en cliquant sur l'icône située en haut à droite du widget.

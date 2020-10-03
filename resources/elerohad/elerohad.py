@@ -23,18 +23,19 @@ import re
 import signal
 import argparse
 from os.path import join
+from Queue import Queue
 import json
 import binascii
 import traceback
 import globals
 import copy
+import threading
 
 try:
     from jeedom.jeedom import *
 except ImportError:
     print "Error: importing module jeedom.jeedom"
     sys.exit(1)
-
 # ----------------------------------------------------------------------------
 def makeCS(frame):
     logging.debug('makeCS() Called')
@@ -54,45 +55,6 @@ def makeCS(frame):
         checksumNumber=upperBound-checksumNumber
 
     frame.append(format(checksumNumber, '02x'))
-# ----------------------------------------------------------------------------
-def decodeAck(rowmessage, decoded):
-    if len(rowmessage)<6:
-        return False
-
-    logging.debug('decodeAck() Called')
-    frame=[]
-    for elm in rowmessage:
-        frame.append(str(jeedom_utils.ByteToHex(elm)).lower())
-
-    ackcs=frame[-1]
-    tmpframe=frame[:-1]
-    makeCS(tmpframe)
-
-    if frame[-1] == ackcs:
-        logging.debug('decodeAck() CS ok')
-        firstChannels=frame[3]
-        secondChannels=frame[4]
-        bytes=firstChannels+secondChannels
-        print bytes
-        bytes=int(bytes, 16)
-        print bytes
-
-        channel=1
-        while bytes != 1 and channel <= 15:
-            bytes = bytes >> 1
-            channel=channel+1
-
-        if channel<16:
-            decoded.append(channel)
-            decoded.append(frame[5])
-            logging.debug('decodeAck() OK channel: '+str(channel) + ' status: ' + str(frame[5]))
-            return True
-        else:
-            logging.debug('decodeAck() channel: '+str(channel) + ' unknown, unable to found device')
-            return False
-    else:
-        logging.debug('decodeAck() FAILED')
-        return False
 # ----------------------------------------------------------------------------
 def easyCheck(frame):
     logging.debug('easyCheck() Called')
@@ -132,192 +94,179 @@ def easyInfo(channel, frame):
     makeCS(frame)
     return True
 # ----------------------------------------------------------------------------
-def addQueue(cmd, device, steptime, maxretry, targetcmd=None):
-    logging.debug('addQueue() Called')
-    toqueue={'cmd' : str(cmd), 'device' : str(device), 'del':0, 'steptime':steptime, 'maxretry':maxretry, 'targetcmd':str(targetcmd), 'timer':(int(time.time())+steptime)}
-    globals.QUEUED.append(copy.deepcopy(toqueue))
+def decodeAck(rowmessage, decoded):
+    logging.debug('decodeAck() Called')
+    if len(rowmessage)<6:
+        return False
 
-def readQueue():
-    logging.debug('readQueue() Called')
-    for elm in globals.QUEUED:
-        if elm['del']==0:
-            if elm['maxretry']>0:
-                if elm['timer'] <= int(time.time()):
-                    elm['maxretry']=elm['maxretry']-1
-                    elm['timer']=(int(time.time()+elm['steptime']))
+    logging.debug('decodeAck() Called')
+    frame=[]
+    for elm in rowmessage:
+        frame.append(str(jeedom_utils.ByteToHex(elm)).lower())
 
-                    logging.debug('readQueue() send cmd to prepare_send_eleroha()')
-                    logQueue()
-                    prepare_send_eleroha(elm['cmd'], elm['device'], 0)
-            else:
-                elm['del']=1
+    ackcs=frame[-1]
+    tmpframe=frame[:-1]
+    makeCS(tmpframe)
 
-    delQueue()
+    if frame[-1] == ackcs:
+        logging.debug('decodeAck() CS ok')
+        firstChannels=frame[3]
+        secondChannels=frame[4]
+        bytes=firstChannels+secondChannels
+        print bytes
+        bytes=int(bytes, 16)
+        print bytes
 
-def todelQueue(device):
-    logging.debug('todelQueue() Called')
-    for elm in globals.QUEUED:
-        logging.debug('todelQueue() Queue Device: '+ elm['device'] + ' Search Device: ' + str(device))
-        if elm['device']==str(device):
-            elm['del']=1
-            logging.debug('todelQueue() to del  device: '+ device)
+        channel=1
+        while bytes != 1 and channel <= 15:
+            bytes = bytes >> 1
+            channel=channel+1
 
-    delQueue()
-
-def delQueue():
-    logging.debug('delQueue() Called')
-    cleanlist = []
-    for elm in globals.QUEUED:
-        if elm['del']==0:
-            cleanlist.append(elm)
-
-
-    globals.QUEUED=[]
-    if len(cleanlist) >0:
-        globals.QUEUED=copy.deepcopy(cleanlist)
-
-def targetQueue(device, targetcmd):
-    logging.debug('targetQueue() Called')
-    for elm in globals.QUEUED:
-        if elm['targetcmd'] is not None:
-            logging.debug('targetQueue() Queue Device: '+ elm['device'] + ' Queue Target: ' + elm['targetcmd'])
-            logging.debug('targetQueue() Search Device: '+ str(device) + ' Search Target: ' + str(targetcmd))
-            if elm['device']==str(device) and elm['targetcmd']==str(targetcmd):
-                logging.debug('targetQueue() del from queue target found')
-                elm['del']=1
-
-    delQueue()
-
-def logQueue():
-    logging.debug('logQueue() Called')
-    i=0
-    for elm in globals.QUEUED:
-        logging.debug('logQueue() nbr: ' + str(i))
-        logging.debug('logQueue()    cmd   : ' + elm['cmd'] + ' device: ' + elm['device'] + ' steptime: ' + str(elm['steptime']) + ' targetcmd: ' + elm['targetcmd'])
-        logging.debug('logQueue()    timer : ' + str(elm['timer']) + '(current: '+str(int(time.time()))+') maxretry: ' + str(elm['maxretry']) + ' del: ' + str(elm['del']) )
-
-        i=i+1
-
+        if channel<16:
+            decoded.append(channel)
+            decoded.append(frame[5])
+            logging.debug('decodeAck() OK channel: '+str(channel) + ' status: ' + str(frame[5]))
+            return True
+        else:
+            logging.debug('decodeAck() channel: '+str(channel) + ' unknown, unable to found device')
+            return False
+    else:
+        logging.debug('decodeAck() FAILED')
+        return False
 # ----------------------------------------------------------------------------
-# read from Jeedom
-def read_socket():
-    #logging.debug('read_socket() Called (Jeedom=>deamon)')
+def read_jeedom():
+    logging.debug('read_jeedom() Called')
     try:
         global JEEDOM_SOCKET_MESSAGE
         if not JEEDOM_SOCKET_MESSAGE.empty():
-            logging.debug("read_socket() New message received")
+            logging.debug("read_jeedom() New message received")
             message = json.loads(jeedom_utils.stripped(JEEDOM_SOCKET_MESSAGE.get()))
 
             if message['apikey'] != globals.apikey:
-                logging.error("read_socket() Invalid apikey from socket : " + str(message))
+                logging.error("read_jeedom() Invalid apikey from socket : " + str(message))
                 return
 
-            logging.debug('read_socket() Device ID: '+str(message['device']['id']))
-            logging.debug('read_socket() Device EQLOGIC_ID: '+str(message['device']['EqLogic_id']))
-            logging.debug('read_socket() Device CMD: '+str(message['cmd']))
+            logging.debug('read_jeedom() Device ID: '+str(message['device']['id']))
+            logging.debug('read_jeedom() Device EQLOGIC_ID: '+str(message['device']['EqLogic_id']))
+            logging.debug('read_jeedom() Device CMD: '+str(message['cmd']))
 
-            globals.KNOWN_DEVICES[str(message['device']['id'])] = message['device']
+            frame=[]
+            oktosend=False
+            queue_item={}
+            if message['cmd'] == 'setdown':
+                oktosend=easySend(int(message['device']['id']), '40', frame)
 
-            todelQueue(message['device']['id'])
-            prepare_send_eleroha(message['cmd'], int(message['device']['id']), 1)
+            elif message['cmd'] == 'setup':
+                oktosend=easySend(int(message['device']['id']), '20', frame)
+
+            elif message['cmd'] == 'setstop':
+                oktosend=easySend(int(message['device']['id']), '10', frame)
+
+            elif message['cmd'] == 'settilt':
+                oktosend=easySend(int(message['device']['id']), '24', frame)
+
+            elif message['cmd'] == 'setintermediate':
+                oktosend=easySend(int(message['device']['id']), '44', frame)
+
+            elif message['cmd'] == 'getinfo':
+                oktosend=easyInfo(int(message['device']['id']), frame)
+
+            if oktosend==True:
+                while TIMER_IN_PROCESS.empty() == False:
+                    logging.debug("Cancelling queue timer")
+                    timer=TIMER_IN_PROCESS.get()
+                    timer.cancel()
+                    TIMER_IN_PROCESS.task_done()
+
+                while CMD_TO_SEND.empty() == False:
+                    logging.debug("Cancelling queue cmd to send")
+                    queue_item=CMD_TO_SEND.get()
+                    CMD_TO_SEND.task_done()
+
+                while CMD_IN_PROCESS.empty() == False:
+                    logging.debug("Cancelling queue cmd in process")
+                    queue_item=CMD_IN_PROCESS.get()
+                    CMD_IN_PROCESS.task_done()
+
+
+                frametosend="".join(frame)
+                queue_item={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend}
+                CMD_TO_SEND.put(queue_item)
+                logging.debug("Put frame '"+str(frametosend)+"' into CMD_TO_SEND queue")
+                write_stick()
+
+                if message['cmd'] != 'getinfo':
+                    frame=[]
+                    oktosend=False
+                    oktosend=easyInfo(int(message['device']['id']), frame)
+                    if oktosend==True:
+                        frametosend="".join(frame)
+                        queue_item={}
+                        queue_item={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend}
+
+                        CMD_TO_SEND.put(queue_item)
+                        logging.debug("Put frame '"+str(frametosend)+"' into CMD_TO_SEND queue")
+
+                        timer = threading.Timer(10.0, write_stick)
+                        timer.start()
+                        logging.debug("Start 10s timer")
+                        TIMER_IN_PROCESS.put(timer)
+                        logging.debug("Put 10s timer into TIMER_IN_PROCESS queue")
+
+                        CMD_TO_SEND.put(queue_item)
+                        logging.debug("Put frame '"+str(frametosend)+" into CMD_TO_SEND queue")
+
+                        timer = threading.Timer(180.0, write_stick)
+                        timer.start()
+                        logging.debug("Start 180s timer")
+
+                        TIMER_IN_PROCESS.put(timer)
+                        logging.debug("Put 180s timer into TIMER_IN_PROCESS queue")
 
     except Exception,e:
-        logging.error('Error on read socket : '+str(e))
+        logging.error('Error on read_jeedom : '+str(e))
 # ----------------------------------------------------------------------------
-def prepare_send_eleroha(cmd, device, toqueue):
-    logging.debug('prepare_send_eleroha() Called')
-    frame=[]
-    send=False
-    if cmd == 'setdown':
-        send=easySend(int(device), '40', frame)
+def write_stick():
+    logging.debug('write_stick() Called')
+    if CMD_IN_PROCESS.empty() == True:
+        if CMD_TO_SEND.empty() == False:
+            logging.debug('Ready write frame to stick serial port')
 
-    elif cmd == 'setup':
-        send=easySend(int(device), '20', frame)
+            queue_item=CMD_TO_SEND.get()
+            jeedom_serial.flushOutput()
+            jeedom_serial.flushInput()
+            jeedom_serial.write(binascii.a2b_hex(queue_item.get("frame")))
+            logging.debug("Write frame : "+ str(queue_item.get("frame")))
 
-    elif cmd == 'setstop':
-        send=easySend(int(device), '10', frame)
-
-    elif cmd == 'settilt':
-        send=easySend(int(device), '24', frame)
-
-    elif cmd == 'setintermediate':
-        send=easySend(int(device), '44', frame)
-
-    elif cmd == 'getinfo':
-        send=easyInfo(int(device), frame)
-
-    if send==True:
-        logging.debug('prepare_send_eleroha() BILT frame : '+str(frame))
-
-        try:
-            send_eleroha(frame)
-            if toqueue==1:
-                if cmd=='setup':
-                    addQueue('getinfo', device, 2, 1, None)
-                    addQueue('getinfo', device, 5, 12, '01')
-                elif cmd=='setdown':
-                    addQueue('getinfo', device, 2, 1, None)
-                    addQueue('getinfo', device, 5, 12, '02')
-                elif cmd=='settilt':
-                    addQueue('getinfo', device, 3, 2, None)
-                elif cmd=='setintermediate':
-                    addQueue('getinfo', device, 3, 2, None)
-                elif cmd=='setstop':
-                    addQueue('getinfo', device, 3, 2, None)
-
-        except Exception, e:
-           logging.error('prepare_send_eleroha() error : '+str(e))
-
+            CMD_IN_PROCESS.put(queue_item)
+            logging.debug("Put frame '"+str(queue_item.get("frame"))+"' into CMD_IN_PROCESS queue")
 # ----------------------------------------------------------------------------
-def send_eleroha(frame):
-    logging.debug('send_eleroha() Called (deamon=>Elero stick)')
-    tosend="".join(frame)
-    jeedom_serial.flushOutput()
-    jeedom_serial.flushInput()
-
-    logging.debug("send_eleroha() Write frame to serial port")
-    jeedom_serial.write(binascii.a2b_hex(tosend))
-    logging.debug("send_eleroha() Send frame : "+ tosend)
-# ----------------------------------------------------------------------------
-# Read from Stick
-def read_eleroha():
-    #logging.debug('read_eleroha() Called (Elero stick=>deamon)')
+def read_stick():
+    logging.debug('read_stick() Called')
     message = None
     try:
         byte = jeedom_serial.read()
     except Exception, e:
-        logging.error("read_eleroha() error: " + str(e))
+        logging.error("read_stick() error: " + str(e))
         if str(e) == '[Errno 5] Input/output error':
             logging.error("Exit 1 because this exeption is fatal")
             shutdown()
     try:
         if byte:
             message = byte + jeedom_serial.readbytes(ord(byte))
-            logging.debug("read_eleroha() message: " + str(jeedom_utils.ByteToHex(message)))
+            logging.debug("read_stick() message: " + str(jeedom_utils.ByteToHex(message)))
 
             info=[]
             if decodeAck(message, info) == True:
-                logging.debug("read_eleroha() message: OK")
+                logging.debug("read_stick() Ack: OK")
 
-                if str(info[0]) in globals.KNOWN_DEVICES:
-                    if globals.KNOWN_DEVICES[str(info[0])]['cmd']=='settilt':
-                        if str(info[1])=='0d':
-                            info[1]='04'
-                    elif globals.KNOWN_DEVICES[str(info[0])]['cmd']=='setintermediate':
-                        if str(info[1])=='0d' or str(info[1])=='02':
-                            info[1]='03'
-
-                    targetQueue(info[0], info[1])
-
-                    action={}
-                    action['value']=str(info[1])
-                    action['channel'] = str(info[0])
-                    action['EqLogic_id'] = globals.KNOWN_DEVICES[str(info[0])]['EqLogic_id']
-                    time.sleep(1)
-                    globals.JEEDOM_COM.add_changes('info',action)
-                    logging.debug('read_eleroha() message to Jeedom sent')
+                if CMD_IN_PROCESS.empty() == True:
+                    logging.debug("read_stick() received Ack without item into CMD_IN_PROCESS queue")
                 else:
-                    logging.error("read_eleroha() No key found in KNOWN_DEVICES")
+                    queue_item=CMD_IN_PROCESS.get()
+                    send_to_jeedom={"info":{"value":str(info[1]), "EqLogic_id":queue_item.get("eqlogic_id")}}
+                    globals.JEEDOM_COM.send_change_immediate(send_to_jeedom)
+                    logging.debug('read_stick() message to Jeedom sent')
 
     except OSError, e:
         logging.error("read_eleroha() error on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
@@ -333,13 +282,10 @@ def listen():
     try:
         while 1:
             time.sleep(0.2)
-            #Elero stick
-            read_eleroha()
-            #Jeedom
-            read_socket()
-            #QUEUE
-            #logQueue()
-            readQueue()
+            # From Jeedom and queueing
+            read_jeedom()
+            # From Elero stick to Jeedom
+            read_stick()
     except KeyboardInterrupt:
         shutdown()
 # ----------------------------------------------------------------------------
@@ -368,7 +314,6 @@ def shutdown():
     sys.stdout.flush()
     os._exit(0)
 # ----------------------------------------------------------------------------
-
 parser = argparse.ArgumentParser(description='elerohad Daemon for Jeedom plugin')
 parser.add_argument("--device", help="Device", type=str)
 parser.add_argument("--serialrate", help="Device serial rate", type=str)
@@ -440,6 +385,11 @@ try:
         shutdown()
     jeedom_serial = jeedom_serial(device=globals.device,rate=globals.serial_rate,timeout=globals.serial_timeout)
     jeedom_socket = jeedom_socket(port=globals.socket_port,address=globals.socket_host)
+
+    CMD_TO_SEND = Queue()
+    CMD_IN_PROCESS = Queue()
+    TIMER_IN_PROCESS = Queue()
+
     listen()
 except Exception,e:
     logging.error('Fatal error : '+str(e))

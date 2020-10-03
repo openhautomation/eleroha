@@ -1,6 +1,4 @@
 JEEDOM_COM = ''
-KNOWN_DEVICES = {}
-QUEUED=[]
 device = ''
 serial_rate = 38400
 serial_timeout = 0
@@ -11,5 +9,5 @@ pidfile = '/tmp/elerohad.pid'
 callback = ''
 cycle = 0.3
 apikey = ''
-log_level = "error"
+log_level = "debug"
 daemonname=''

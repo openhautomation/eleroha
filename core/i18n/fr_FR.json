@@ -38,12 +38,24 @@
         "Ventillation": "Ventillation",
         "Intermédiaire": "Intermédiaire",
         "Etat": "Etat",
-        "Rafraichir": "Rafraichir"
-    },
-    "plugins\/eleroha\/core\/php\/jeeEleroha.php": {
-        "Fermeture": "Fermeture",
+        "Rafraichir": "Rafraichir",
+        "Aucune information": "Aucune information",
+        "Ouvert": "Ouvert",
         "Fermé": "Fermé",
-        "Position inconnue": "Position inconnue",
-        "Ouverture": "Ouverture"
+        "Intermédiaire": "Intermédiaire",
+        "Ventilation": "Ventilation",
+        "Equipement bloqué": "Equipement bloqué",
+        "Surchauffe": "Surchauffe",
+        "Timeout": "Timeout",
+        "Début ouverture": "Début ouverture",
+        "Début fermeture": "Début fermeture",
+        "Ouverture": "Ouverture",
+        "Fermeture": "Fermeture",
+        "Arrêté position indéfinie": "Arrêté position indéfinie",
+        "Top position stop wich is tilt position": "Top position stop wich is tilt position",
+        "Bottom position stop wich is intermediate position": "Bottom position stop wich is intermediate position",
+        "Equipement éteint": "Equipement éteint",
+        "Equipement allumé": "Equipement allumé",
+        "Etat inconnu": "Etat inconnu"
     }
 }

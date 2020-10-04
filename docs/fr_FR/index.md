@@ -51,3 +51,41 @@ N'oubliez pas de sauvegarder !
 Félicitation, vous avez terminé.
 
 Vous pouvez actualiser manuellement les informations en cliquant sur l'icône située en haut à droite du widget.
+
+**Utilisation**
+
+Attention :
+* le stick Elero ne gère ni buffer ni file d'attente.
+* Le stick Elero essaiera toujours de traiter la dernière commande reçue
+
+Afin de pouvoir interrompre une commande par une autre à tout moment, Eleroha ne gère pas de file d'attente.
+
+La commande Etat d'Eleroha stock le dernier état reçu de l'équipement. Elle peut être mise à jour en utilisant la commande rafraichir.
+
+Voici les valeurs gérées :
+* 00 : Aucune information
+* 01 : Ouvert
+* 02 : Fermé
+* 03 : Intermédiaire
+* 04 : Ventilation
+* 05 : Equipement bloqué
+* 06 : Surchauffe
+* 07 : Timeout
+* 08 : Début ouverture
+* 09 : Début fermeture
+* 0A : Ouverture
+* 0B : Fermeture
+* 0C : Arrêté position indéfinie
+* 0D : Top position stop wich is tilt position
+* 0E : Bottom position stop wich is intermediate position
+* 0F : Equipement éteint
+* 10 : Equipement allumé
+* 11 : Etat inconnu
+
+Afin de gérer au mieux les mises à jour d'état après une commande voici ce qui est conseiller de faire
+
+1. Envoi de la commande (commande d'action, commande rafraichir exclue)
+2. Attendre 10 seconde et rafraichir afin de connaitre l'état en cours
+3. Attendre 3 minutes et rafraichir afin de connaitre l'état final.
+
+Cette séquence est gérer par le plugin si aucune commande n'est envoyée, 3 minutes et 10 secondes avant la précédente.

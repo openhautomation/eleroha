@@ -183,10 +183,10 @@ def read_jeedom():
                     queue_item=CMD_TO_SEND.get()
                     CMD_TO_SEND.task_done()
 
-                while CMD_IN_PROCESS.empty() == False:
-                    logging.debug("Cancelling queue cmd in process")
-                    queue_item=CMD_IN_PROCESS.get()
-                    CMD_IN_PROCESS.task_done()
+                # while CMD_IN_PROCESS.empty() == False:
+                #     logging.debug("Cancelling queue cmd in process")
+                #     queue_item=CMD_IN_PROCESS.get()
+                #     CMD_IN_PROCESS.task_done()
 
 
                 frametosend="".join(frame)

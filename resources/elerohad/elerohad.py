@@ -183,6 +183,9 @@ def read_jeedom():
                     queue_item=CMD_TO_SEND.get()
                     CMD_TO_SEND.task_done()
 
+                if CMD_IN_PROCESS.empty() == False:
+                    logging.debug("CMD_IN_PROCESS queue is not empty")
+
                 # while CMD_IN_PROCESS.empty() == False:
                 #     logging.debug("Cancelling queue cmd in process")
                 #     queue_item=CMD_IN_PROCESS.get()

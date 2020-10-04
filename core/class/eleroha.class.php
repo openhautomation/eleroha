@@ -72,7 +72,6 @@ class eleroha extends eqLogic {
 		$cmd .= ' --socketport ' . config::byKey('socketport', 'eleroha');
 		$cmd .= ' --sockethost 127.0.0.1';
     $cmd .= ' --callback ' . network::getNetworkAccess('internal') . '/plugins/eleroha/core/php/jeeEleroha.php';
-		//$cmd .= ' --callback ' . network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/eleroha/core/php/jeeEleroha.php';
 		$cmd .= ' --apikey ' . jeedom::getApiKey('eleroha');
 		$cmd .= ' --daemonname local';
 		$cmd .= ' --pid ' . jeedom::getTmpFolder('eleroha') . '/deamon.pid';

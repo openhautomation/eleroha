@@ -33,15 +33,18 @@ if (!is_array($result)) {
 log::add('eleroha','debug','Received data from Deamond');
 
 if(array_key_exists('info', $result)===true){
-  log::add('eleroha','debug','value: '.$result['info']['value']);
-  log::add('eleroha','debug','channel: '.$result['info']['channel']);
-  log::add('eleroha','debug','EqLogic_id: '.$result['info']['EqLogic_id']);
+  log::add('eleroha','debug','update from deamon value: '.$result['info']['value']);
+  log::add('eleroha','debug','update from deamon channel: '.$result['info']['channel']);
+  log::add('eleroha','debug','update from deamon EqLogic_id: '.$result['info']['EqLogic_id']);
   $eleroha = eleroha::byId($result['info']['EqLogic_id']);
   if (is_object($eleroha)) {
-    log::add('eleroha','debug','Obj found, saving');
-    $cmd = $eleroha->getCmd(null, 'info');
-    $cmd->event($result['info']['value']);
-    $cmd->save();
+    $eleroha->checkAndUpdateCmd('info', $result['info']['value']);
+    log::add('eleroha','debug','Obj found, saving Etat: '.$result['info']['value']);
+    //$cmd = $eleroha->getCmd(null, 'info');
+    //$cmd->event($result['info']['value']);
+    //$cmd->save();
     $eleroha->refreshWidget();
+  }else{
+    log::add('eleroha','debug','Obj NO found, failed to save Etat: '.$result['info']['value']);
   }
 }

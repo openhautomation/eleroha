@@ -267,7 +267,7 @@ def read_stick():
                     logging.debug("read_stick() received Ack without item into CMD_IN_PROCESS queue")
                 else:
                     queue_item=CMD_IN_PROCESS.get()
-                    send_to_jeedom={"info":{"value":str(info[1]), "EqLogic_id":queue_item.get("eqlogic_id")}}
+                    send_to_jeedom={"info":{"channel":str(info[0]), "value":str(info[1]), "EqLogic_id":queue_item.get("eqlogic_id")}}
                     globals.JEEDOM_COM.send_change_immediate(send_to_jeedom)
                     logging.debug('read_stick() message to Jeedom sent')
 

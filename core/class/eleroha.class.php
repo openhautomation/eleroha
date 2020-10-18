@@ -542,15 +542,26 @@ class elerohaCmd extends cmd {
           case 'setstop':
           case 'settilt':
           case 'setintermediate':
-
-
             $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id(), 'cmd'=>$this->getConfiguration('actionCmd')));
             $message = trim(json_encode($data));
 
             log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);
             $socket = socket_create(AF_INET, SOCK_STREAM, 0);
-            socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
-            socket_write($socket, trim($message), strlen(trim($message)));
+            if($socket===false){
+              $errorcode = socket_last_error();
+              $errormsg = socket_strerror($errorcode);
+              throw new Exception(__('Creation du socket impossible: '.$errormsg, __FILE__));
+            }
+            if(socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'))===false){
+              $errorcode = socket_last_error();
+              $errormsg = socket_strerror($errorcode);
+              throw new Exception(__('Connexion au socket impossible: '.$errormsg, __FILE__));
+            }
+            if(socket_write($socket, trim($message), strlen(trim($message)))===false){
+              $errorcode = socket_last_error();
+              $errormsg = socket_strerror($errorcode);
+              throw new Exception(__('Ecriture sur le socket impossible: '.$errormsg, __FILE__));
+            }
             socket_close($socket);
 
             break;

@@ -15,6 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
+header('Content-type: application/json');
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
 
 if (!jeedom::apiAccess(init('apikey'), 'eleroha')) {
@@ -26,11 +27,25 @@ if (init('test') != '') {
 	echo 'OK';
 	die();
 }
-$result = json_decode(file_get_contents("php://input"), true);
-if (!is_array($result)) {
+
+log::add('eleroha','debug','Received data from Deamond');
+
+$deamon_message=file_get_contents("php://input");
+if($deamon_message===false){
+  log::add('eleroha','debug','Read deamon message failed');
+  die();
+}
+
+log::add('eleroha','debug','Read deamon message: "'.$deamon_message.'"');
+$result = json_decode($deamon_message, true);
+if($result===false){
+  log::add('eleroha','debug','json decode failed');
+  die();
+}
+if (is_array($result)===false){
+  log::add('eleroha','debug','json result is not an array');
 	die();
 }
-log::add('eleroha','debug','Received data from Deamond');
 
 if(array_key_exists('info', $result)===true){
   log::add('eleroha','debug','update from deamon value: '.$result['info']['value']);

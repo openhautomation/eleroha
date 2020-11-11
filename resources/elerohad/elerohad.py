@@ -13,6 +13,7 @@ import traceback
 from optparse import OptionParser
 from os.path import join
 import json
+import uuid
 
 from Queue import Queue
 
@@ -152,22 +153,24 @@ def read_stick(name):
         except OSError, e:
             logging.error("read_eleroha() error on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
 # ----------------------------------------------------------------------------
-def write_stick(device_item):
+def write_stick(id, eqlogic_id, frame, timer_id):
     logging.debug('write_stick() Called')
 
-    if not device_item:
-        logging.debug("No device_item")
-    else:
-        if CMD_IN_PROCESS.empty() == True:
-            shared.JEEDOM_SERIAL.flushOutput()
-            shared.JEEDOM_SERIAL.flushInput()
-            shared.JEEDOM_SERIAL.write(binascii.a2b_hex(device_item.get("frame")))
-            logging.debug("Write frame : "+ str(device_item.get("frame")))
+    if CMD_IN_PROCESS.empty() == True:
+        shared.JEEDOM_SERIAL.flushOutput()
+        shared.JEEDOM_SERIAL.flushInput()
+        shared.JEEDOM_SERIAL.write(binascii.a2b_hex(frame))
+        logging.debug("Write frame : "+ str(frame))
 
-            CMD_IN_PROCESS.put(device_item)
-            logging.debug("Put frame '"+str(device_item.get("frame"))+"' into CMD_IN_PROCESS queue")
-        else:
-            logging.debug("Cmd already in CMD_IN_PROCESS queue")
+        device_item={"id":id, "eqlogic_id":eqlogic_id, "frame":frame, "timer_id":timer_id}
+        CMD_IN_PROCESS.put(device_item)
+        logging.debug("Add cmd in process in CMD_IN_PROCESS queue")
+
+        if timer_id:
+            del shared.TIMER_LISTE[timer_id]
+            logging.debug("Del timer from the TIMER_LISTE")
+    else:
+        logging.debug("Cmd already in CMD_IN_PROCESS queue")
 # ----------------------------------------------------------------------------
 def read_jeedom(name):
     while 1:
@@ -183,9 +186,13 @@ def read_jeedom(name):
                     logging.error("read_jeedom() Invalid apikey from socket : " + str(message))
                     return
 
+                if message.has_key('queued')==False:
+                    message['queued']=1
+
                 logging.debug('read_jeedom() Device ID: '+str(message['device']['id']))
                 logging.debug('read_jeedom() Device EQLOGIC_ID: '+str(message['device']['EqLogic_id']))
                 logging.debug('read_jeedom() Device CMD: '+str(message['cmd']))
+                logging.debug('read_jeedom() Device QUEUED: '+str(message['queued']))
 
                 frame=[]
                 oktosend=False
@@ -210,9 +217,65 @@ def read_jeedom(name):
 
                 if oktosend==True:
                     frametosend="".join(frame)
-                    device_item={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend}
-                    logging.debug("Put frame '"+str(frametosend)+"' into CMD_TO_SEND queue")
-                    write_stick(device_item)
+                    device_item={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend, "timer_id":False}
+                    request_info=False
+                    if message['cmd'] != 'getinfo':
+                        oktosend=easyInfo(int(message['device']['id']), frame)
+                        if oktosend==True:
+                            frametosend="".join(frame)
+                            device_item_info={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend, "timer_id":False}
+                            request_info=True
+
+                    if message['queued']==0:
+                        logging.debug("No queued message send directly to the stick")
+                        write_stick(**device_item)
+                        if request_info:
+                            timer = threading.Timer(10, write_stick, [], device_item_info)
+                            timer.start()
+
+                            timer = threading.Timer(180, write_stick, [], device_item_info)
+                            timer.start()
+                    else:
+                        logging.debug("Queue activated for the device")
+                        queue_delay=15
+                        now=int(time.time())
+
+                        if len(shared.TIMER_LISTE) < 31 :
+                            logging.debug("Less then 30 items in TIMER_LISTE: queueing ok")
+
+                            timer_id=str(uuid.uuid4())
+                            device_item["timer_id"]=timer_id
+
+                            if len(shared.TIMER_LISTE)==0:
+                                logging.debug("First item in TIMER_LISTE")
+                                shared.ACTION_TIME=now-10
+
+                            # le prochain timer est-il passe
+                            if shared.ACTION_TIME < now:
+                                # prochain timer dans 2s
+                                new_timer_time=2
+                            else:
+                                # dans combien de temps a lieu le prochain timer
+                                next_timer_time=shared.ACTION_TIME-now
+                                # Timer suivant dans next_timer+15s
+                                new_timer_time=next_timer_time+queue_delay
+
+                            logging.debug("New timer in "+str(new_timer_time))
+                            shared.ACTION_TIME=now+new_timer_time
+
+                            timer = threading.Timer(new_timer_time, write_stick, [], device_item)
+                            timer.start()
+                            shared.TIMER_LISTE[timer_id]=timer
+
+                            if request_info:
+                                timer = threading.Timer((new_timer_time+10), write_stick, [], device_item_info)
+                                timer.start()
+
+                                timer = threading.Timer((new_timer_time+180), write_stick, [], device_item_info)
+                                timer.start()
+
+                        else:
+                            logging.debug("More than 30 items in TIMER_LISTE")
 
         except Exception as e:
         			logging.error('Error on read socket: '+str(e))
@@ -254,6 +317,10 @@ def shutdown():
 	logging.debug("Exit 0")
 	sys.stdout.flush()
 	os._exit(0)
+# ----------------------------------------------------------------------------
+def clearqueue():
+    shared.ACTION_TIME = 0
+    shared.TIMER_LISTE = {}
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 _log_level = "debug"

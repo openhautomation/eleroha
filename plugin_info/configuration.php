@@ -46,6 +46,12 @@ if (!isConnect()) {
     <div class="col-lg-2">
         <input class="configKey form-control" data-l1key="socketport" placeholder="" />
     </div>
-</div>
+  </div>
+  <div class="form-group">
+   <label class="col-lg-4 control-label">{{Activer la file d'attente pour les commandes des équipements}}</label>
+   <div class="col-lg-2">
+       <input class="configKey form-control" data-l1key="queueing" type="checkbox" placeholder="" />
+   </div>
+ </div>
 </fieldset>
 </form>

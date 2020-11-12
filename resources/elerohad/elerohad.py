@@ -186,13 +186,13 @@ def read_jeedom(name):
                     logging.error("read_jeedom() Invalid apikey from socket : " + str(message))
                     return
 
-                if message.has_key('queued')==False:
-                    message['queued']=1
+                if message.has_key('queueing')==False:
+                    message['queueing']=0
 
                 logging.debug('read_jeedom() Device ID: '+str(message['device']['id']))
                 logging.debug('read_jeedom() Device EQLOGIC_ID: '+str(message['device']['EqLogic_id']))
                 logging.debug('read_jeedom() Device CMD: '+str(message['cmd']))
-                logging.debug('read_jeedom() Device QUEUED: '+str(message['queued']))
+                logging.debug('read_jeedom() Device QUEUED: '+str(message['queueing']))
 
                 frame=[]
                 oktosend=False
@@ -226,7 +226,7 @@ def read_jeedom(name):
                             device_item_info={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend, "timer_id":False}
                             request_info=True
 
-                    if message['queued']==0:
+                    if message['queueing']==0:
                         logging.debug("No queued message send directly to the stick")
                         write_stick(**device_item)
                         if request_info:

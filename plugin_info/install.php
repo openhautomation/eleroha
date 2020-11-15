@@ -21,7 +21,6 @@ function rikaha_install() {
 
 function rikaha_update() {
   $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/";
-  echo "$eleroha_path";
   if(file_exists($eleroha_path . "globals.py")===true){
     unlink($eleroha_path . "globals.py");
     log::add('eleroha', 'debug', "elerohad globals.py deleted");

@@ -226,7 +226,7 @@ def read_jeedom(name):
                             device_item_info={"id":message['device']['id'], "eqlogic_id":message['device']['EqLogic_id'], "frame":frametosend, "timer_id":False}
                             request_info=True
 
-                    if message['queueing']==0:
+                    if int(message['queueing'])==0:
                         logging.debug("No queued message send directly to the stick")
                         write_stick(**device_item)
                         if request_info:

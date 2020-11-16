@@ -24,7 +24,7 @@ function rikaha_update() {
   if(file_exists($eleroha_path . "globals.py")===true){
     unlink($eleroha_path . "globals.py");
     log::add('eleroha', 'debug', "elerohad globals.py deleted");
-	}
+  }
   if(file_exists($eleroha_path . "globals.pyc")===true){
     unlink($eleroha_path . "globals.pyc");
     log::add('eleroha', 'debug', "elerohad globals.pyc deleted");

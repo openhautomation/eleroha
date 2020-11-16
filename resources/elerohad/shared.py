@@ -1,0 +1,5 @@
+import time
+JEEDOM_COM = ''
+JEEDOM_SERIAL =''
+ACTION_TIME = 0
+TIMER_LISTE = {}

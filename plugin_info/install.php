@@ -20,8 +20,26 @@ function rikaha_install() {
 }
 
 function rikaha_update() {
+  $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/";
+  if(file_exists($eleroha_path . "globals.py")===true){
+    unlink($eleroha_path . "globals.py");
+    log::add('eleroha', 'debug', "elerohad globals.py deleted");
+	}
+  if(file_exists($eleroha_path . "globals.pyc")===true){
+    unlink($eleroha_path . "globals.pyc");
+    log::add('eleroha', 'debug', "elerohad globals.pyc deleted");
+  }
+  $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/jeedom/";
+  if(file_exists($eleroha_path . "__init__.pyc")===true){
+    unlink($eleroha_path . "__init__.pyc");
+    log::add('eleroha', 'debug', "elerohad __init__.pyc deleted");
+  }
+  if(file_exists($eleroha_path . "jeedom.pyc")===true){
+    unlink($eleroha_path . "jeedom.pyc");
+    log::add('eleroha', 'debug', "elerohad jeedom.pyc deleted");
+  }
 }
 
-function rikaha_remove()
+function rikaha_remove(){
 }
 ?>

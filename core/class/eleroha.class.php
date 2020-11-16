@@ -71,9 +71,8 @@ class eleroha extends eqLogic {
 		$cmd .= ' --device ' . $port;
 		$cmd .= ' --socketport ' . config::byKey('socketport', 'eleroha');
 		$cmd .= ' --sockethost 127.0.0.1';
-    $cmd .= ' --callback ' . network::getNetworkAccess('internal') . '/plugins/eleroha/core/php/jeeEleroha.php';
+    $cmd .= ' --callback ' . network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/eleroha/core/php/jeeEleroha.php';
 		$cmd .= ' --apikey ' . jeedom::getApiKey('eleroha');
-		$cmd .= ' --daemonname local';
 		$cmd .= ' --pid ' . jeedom::getTmpFolder('eleroha') . '/deamon.pid';
     log::add('eleroha', 'info', 'Démarrage du démon eleroha : ' . $cmd);
     exec($cmd . ' >> ' . log::getPathToLog('eleroha') . ' 2>&1 &');
@@ -542,7 +541,7 @@ class elerohaCmd extends cmd {
           case 'setstop':
           case 'settilt':
           case 'setintermediate':
-            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id(), 'cmd'=>$this->getConfiguration('actionCmd')));
+            $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => $this->getConfiguration('actionCmd'), 'queueing'=>config::byKey('queueing', 'eleroha'), 'device' => array('id'=>$this->getConfiguration('device'), 'EqLogic_id'=>$this->getEqLogic_id(), 'cmd'=>$this->getConfiguration('actionCmd')));
             $message = trim(json_encode($data));
 
             log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Data send: '.$message);

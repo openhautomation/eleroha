@@ -146,7 +146,7 @@ def read_stick(name):
                         logging.debug("read_stick() received Ack without item into CMD_IN_PROCESS queue")
                     else:
                         queue_item=CMD_IN_PROCESS.get()
-                        send_to_jeedom={"info":{"channel":str(info[0]), "value":str(info[1]), "EqLogic_id":queue_item.get("eqlogic_id")}}
+                        send_to_jeedom={"channel":str(info[0]), "value":str(info[1]), "eqlogic_id":queue_item.get("eqlogic_id")}
                         shared.JEEDOM_COM.send_change_immediate(send_to_jeedom)
                         logging.debug('read_stick() message to Jeedom sent')
 
@@ -395,7 +395,7 @@ signal.signal(signal.SIGTERM, handler)
 
 try:
     jeedom_utils.write_pid(str(_pidfile))
-    shared.JEEDOM_COM = jeedom_com(apikey = _apikey,url = _callback,cycle=_cycle)
+    shared.JEEDOM_COM = jeedom_com(apikey = _apikey,url = _callback,cycle=_cycle,retry=4)
     if not shared.JEEDOM_COM.test():
         logging.error('Network communication issues. Please fixe your Jeedom network configuration.')
         shutdown()

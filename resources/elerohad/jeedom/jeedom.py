@@ -131,7 +131,7 @@ class jeedom_com():
 
 	def test(self):
 		try:
-			response = requests.get(self.url + '?apikey=' + self.apikey, verify=False)
+			response = requests.get(self.url + '?test=1&apikey=' + self.apikey, verify=False)
 			if response.status_code != requests.codes.ok:
 				logging.error('Callback error: %s %s. Please check your network configuration page'% (response.status.code, response.status.message,))
 				return False

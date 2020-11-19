@@ -23,10 +23,10 @@ try {
         die();
     }
 
-    if (init('test') != '') {
-        echo 'OK';
-        log::add('eleroha', 'debug', 'Test deamon callback OK');
-        die();
+    if (isset($_GET['test'])) {
+    	echo 'OK';
+      log::add('eleroha', 'debug', 'Test deamon callback OK');
+    	die();
     }
 
     log::add('eleroha','debug','Received data from deamond');

@@ -15,8 +15,6 @@ from os.path import join
 import json
 import uuid
 
-from Queue import Queue
-
 try:
     from jeedom.jeedom import *
 except ImportError:
@@ -142,12 +140,12 @@ def read_stick(name):
                 if decodeAck(message, info) == True:
                     logging.debug("read_stick() Ack: OK")
 
-                    if CMD_IN_PROCESS.empty() == True:
-                        logging.debug("read_stick() received Ack without item into CMD_IN_PROCESS queue")
+                    if len(shared.CMD_IN_PROCESS) == 0:
+                        logging.debug("read_stick() received Ack without item into CMD_IN_PROCESS")
                     else:
-                        queue_item=CMD_IN_PROCESS.get()
-                        send_to_jeedom={"channel":str(info[0]), "value":str(info[1]), "eqlogic_id":queue_item.get("eqlogic_id")}
+                        send_to_jeedom={"channel":str(info[0]), "value":str(info[1]), "eqlogic_id":shared.CMD_IN_PROCESS.get("eqlogic_id")}
                         shared.JEEDOM_COM.send_change_immediate(send_to_jeedom)
+                        shared.CMD_IN_PROCESS.clear()
                         logging.debug('read_stick() message to Jeedom sent')
 
         except OSError, e:
@@ -156,21 +154,20 @@ def read_stick(name):
 def write_stick(id, eqlogic_id, frame, timer_id):
     logging.debug('write_stick() Called')
 
-    if CMD_IN_PROCESS.empty() == True:
-        shared.JEEDOM_SERIAL.flushOutput()
-        shared.JEEDOM_SERIAL.flushInput()
-        shared.JEEDOM_SERIAL.write(binascii.a2b_hex(frame))
-        logging.debug("Write frame : "+ str(frame))
+    now=int(time.time())
+    if len(shared.CMD_IN_PROCESS) != 0:
+        delta=now-int(shared.CMD_IN_PROCESS.get("cmd_time"))
+        if delta < 4:
+            logging.debug("Cmd already in CMD_IN_PROCESS less than 4s: waiting")
+            time.sleep(delta)
+        shared.CMD_IN_PROCESS.clear()
 
-        device_item={"id":id, "eqlogic_id":eqlogic_id, "frame":frame, "timer_id":timer_id}
-        CMD_IN_PROCESS.put(device_item)
-        logging.debug("Add cmd in process in CMD_IN_PROCESS queue")
+    shared.JEEDOM_SERIAL.flushOutput()
+    shared.JEEDOM_SERIAL.flushInput()
+    shared.JEEDOM_SERIAL.write(binascii.a2b_hex(frame))
+    logging.debug("Write frame : "+ str(frame))
 
-        if timer_id:
-            del shared.TIMER_LISTE[timer_id]
-            logging.debug("Del timer from the TIMER_LISTE")
-    else:
-        logging.debug("Cmd already in CMD_IN_PROCESS queue")
+    shared.CMD_IN_PROCESS={"id":id, "eqlogic_id":eqlogic_id, "frame":frame, "timer_id":timer_id, "cmd_time":now}
 # ----------------------------------------------------------------------------
 def read_jeedom(name):
     while 1:
@@ -401,8 +398,6 @@ try:
         shutdown()
     shared.JEEDOM_SERIAL = jeedom_serial(device=_device,rate=_serial_rate,timeout=_serial_timeout)
     jeedom_socket = jeedom_socket(port=_socket_port,address=_socket_host)
-
-    CMD_IN_PROCESS = Queue()
 
     listen()
 except Exception as e:

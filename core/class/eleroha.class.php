@@ -30,12 +30,13 @@ class eleroha extends eqLogic {
     $return['state'] = 'nok';
     $pid_file = jeedom::getTmpFolder('eleroha') . '/deamon.pid';
     if (file_exists($pid_file)) {
-      if (@posix_getsid(trim(file_get_contents($pid_file)))) {
-        $return['state'] = 'ok';
-      } else {
-        shell_exec('sudo rm -rf ' . $pid_file . ' 2>&1 > /dev/null;rm -rf ' . $pid_file . ' 2>&1 > /dev/null;');
-      }
-    }
+			$pid = trim(file_get_contents($pid_file));
+			if (is_numeric($pid) && posix_getsid($pid)) {
+				$return['state'] = 'ok';
+			} else {
+				shell_exec(system::getCmdSudo() . 'rm -rf ' . $pid_file . ' 2>&1 > /dev/null;rm -rf ' . $pid_file . ' 2>&1 > /dev/null;');
+			}
+		}
     $return['launchable'] = 'ok';
     $port = config::byKey('port', 'eleroha');
 		$port = jeedom::getUsbMapping($port);
@@ -125,7 +126,7 @@ class eleroha extends eqLogic {
   public static function dependancy_info() {
 		$return = array();
 		$return['progress_file'] = jeedom::getTmpFolder('eleroha') . '/dependance';
-		if (exec(system::getCmdSudo() . system::get('cmd_check') . '-E "python\-serial|python\-requests|python\-pyudev" | wc -l') >= 3) {
+		if (exec(system::getCmdSudo() . system::get('cmd_check') . '-E "python3\-serial|python3\-requests|python3\-pyudev" | wc -l') >= 3) {
 			$return['state'] = 'ok';
 		} else {
 			$return['state'] = 'nok';

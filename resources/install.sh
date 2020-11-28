@@ -1,9 +1,19 @@
-touch /tmp/dependancy_eleroha_in_progress
-echo 0 > /tmp/dependancy_eleroha_in_progress
-echo "Launch install of eleroha dependancy"
-sudo apt-get update
-echo 50 > /tmp/dependancy_eleroha_in_progress
-sudo apt-get install -y python-serial python-requests python-pyudev
-echo 100 > /tmp/dependancy_eleroha_in_progress
-echo "Everything is successfully installed!"
-rm /tmp/dependancy_eleroha_in_progress
+#!/bin/bash
+PROGRESS_FILE=/tmp/dependancy_eleroha_in_progress
+if [ ! -z $1 ]; then
+	PROGRESS_FILE=$1
+fi
+touch ${PROGRESS_FILE}
+echo 0 > ${PROGRESS_FILE}
+echo "********************************************************"
+echo "*        Installation des dépendances [eleroha]        *"
+echo "********************************************************"
+apt-get update
+echo 50 > ${PROGRESS_FILE}
+apt-get install -y python3
+apt-get install -y python3-serial python3-requests python3-pyudev
+echo 100 > ${PROGRESS_FILE}
+echo "********************************************************"
+echo "*           Installation terminée [eleroha]            *"
+echo "********************************************************"
+rm ${PROGRESS_FILE}

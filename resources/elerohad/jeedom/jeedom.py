@@ -30,6 +30,7 @@ from socketserver import (TCPServer, StreamRequestHandler)
 import signal
 import unicodedata
 import pyudev
+import json
 
 # ------------------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ class jeedom_com():
 		i=0
 		while i < self.retry:
 			try:
-				r = requests.post(self.url + '?apikey=' + self.apikey, json=change, timeout=(0.5, 120), verify=False)
+				r = requests.post(self.url + '?apikey=' + self.apikey, data=json.dumps(change), verify=False)
 				if r.status_code == requests.codes.ok:
 					break
 			except Exception as error:

@@ -17,9 +17,16 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function rikaha_install() {
+  if (config::byKey('api::eleroha::mode') == '') {
+    config::save('api::eleroha::mode', 'localhost');
+  }
 }
 
 function rikaha_update() {
+  if (config::byKey('api::eleroha::mode') == '') {
+    config::save('api::eleroha::mode', 'localhost');
+  }
+
   $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/";
   if(file_exists($eleroha_path . "globals.py")===true){
     unlink($eleroha_path . "globals.py");

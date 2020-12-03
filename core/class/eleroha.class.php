@@ -21,7 +21,7 @@ require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class eleroha extends eqLogic {
 
-  public static $_widgetPossibility = array('custom' => true);
+  //public static $_widgetPossibility = array('custom' => true);
 
   public static function deamon_info(){
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
@@ -257,9 +257,22 @@ class eleroha extends eqLogic {
           'configuration'=>array(array('k1'=>'actionCmd', 'k2'=>'setintermediate'), array('k1'=>'device', 'k2'=>'')),
           'unite'=>''
         ),
+        // Etat row
         'info'=>array(
-          'name'=>__('Etat', __FILE__),
+          'name'=>__('Etat row', __FILE__),
           'id'=>'info',
+          'parent'=>'0',
+          'type'=>'info',
+          'subtype'=>'string',
+          'historized'=>0,
+          'visible'=>0,
+          'configuration'=>array(),
+          'unite'=>''
+        ),
+        // Etat human readable
+        'info_hr'=>array(
+          'name'=>__('Etat', __FILE__),
+          'id'=>'info_hr',
           'parent'=>'0',
           'type'=>'info',
           'subtype'=>'string',
@@ -313,12 +326,6 @@ class eleroha extends eqLogic {
       foreach ($motorStructure as $key => $value) {
         log::add('eleroha', 'debug', __FUNCTION__ . '()-ln: '.$value['name'].' in process');
 
-        /*
-        if($key=='info'){
-          $value['id']=$this->getConfiguration('channel');
-        }
-        */
-
         $elerohaCmd = $this->getCmd(null, $value['id']);
         if (!is_object($elerohaCmd)){
           $elerohaCmd=new elerohaCmd();
@@ -365,6 +372,7 @@ class eleroha extends eqLogic {
 
     }
 
+    /*
     public function toHtml($_version = 'dashboard') {
       log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
       $replace = $this->preToHtml($_version);
@@ -487,7 +495,7 @@ class eleroha extends eqLogic {
       cache::set('elerohaWidget' . $_version . $this->getId(), $html, 0);
       return $html;
     }
-
+    */
     /*
      * Non obligatoire mais permet de modifier l'affichage du widget si vous en avez besoin
       public function toHtml($_version = 'dashboard') {

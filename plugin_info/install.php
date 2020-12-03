@@ -17,14 +17,35 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function rikaha_install() {
-  if (config::byKey('api::eleroha::mode') == '') {
+  if (config::byKey('api::eleroha::mode') != 'localhost') {
     config::save('api::eleroha::mode', 'localhost');
   }
 }
 
 function rikaha_update() {
-  if (config::byKey('api::eleroha::mode') == '') {
+  if (config::byKey('api::eleroha::mode') != 'localhost') {
     config::save('api::eleroha::mode', 'localhost');
+  }
+
+  foreach (eqLogic::byType('eleroha') as $eqLogic) {
+    foreach ($eqLogic->getCmd() as $elerohaCmd) {
+      if($elerohaCmd->getLogicalId()=="info") {
+        $elerohaCmd->setName("Etat row");
+        $elerohaCmd->setIsVisible(0);
+        $elerohaCmd->save();
+      }
+    }
+    $elerohaCmd = $eqLogic->getCmd(null, "info_hr");
+    if (!is_object($elerohaCmd)){
+      $elerohaCmd=new eleroha::elerohaCmd();
+      $elerohaCmd->setLogicalId("info_hr");
+      $elerohaCmd->setName("Etat");
+      $elerohaCmd->setType("info");
+      $elerohaCmd->setSubType("string");
+      $elerohaCmd->setIsHistorized(0);
+      $elerohaCmd->setIsVisible(1);
+      $elerohaCmd->save();
+    }
   }
 
   $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/";

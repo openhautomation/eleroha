@@ -54,71 +54,71 @@ try {
       die();
     }
 
-    $result['value_hr']=__('Etat inconnu', __FILE__)
+    $result['status']=__('Etat inconnu', __FILE__);
     switch ($result['value']) {
       case '00':
-        $result['value_hr']=__('Aucune information', __FILE__);
+        $result['status']=__('Aucune information', __FILE__);
         break;
       case '01':
-        $result['value_hr']=__('Ouvert', __FILE__);
+        $result['status']=__('Ouvert', __FILE__);
         break;
       case '02':
-        $result['value_hr']=__('Fermé', __FILE__);
+        $result['status']=__('Fermé', __FILE__);
         break;
       case '03':
-        $result['value_hr']=__('Intermédiaire', __FILE__);
+        $result['status']=__('Intermédiaire', __FILE__);
         break;
       case '04':
-        $result['value_hr']=__('Ventilation', __FILE__);
+        $result['status']=__('Ventilation', __FILE__);
         break;
       case '05':
-        $result['value_hr']=__('Equipement bloqué', __FILE__);
+        $result['status']=__('Equipement bloqué', __FILE__);
         break;
       case '06':
-        $result['value_hr']=__('Surchauffe', __FILE__);
+        $result['status']=__('Surchauffe', __FILE__);
         break;
       case '07':
-        $result['value_hr']=__('Timeout', __FILE__);
+        $result['status']=__('Timeout', __FILE__);
         break;
       case '08':
-        $result['value_hr']=__('Début ouverture', __FILE__);
+        $result['status']=__('Début ouverture', __FILE__);
         break;
       case '09':
-        $result['value_hr']=__('Début fermeture', __FILE__);
+        $result['status']=__('Début fermeture', __FILE__);
         break;
       case '0a':
-        $result['value_hr']=__('Ouverture', __FILE__);
+        $result['status']=__('Ouverture', __FILE__);
         break;
       case '0b':
-        $result['value_hr']=__('Fermeture', __FILE__);
+        $result['status']=__('Fermeture', __FILE__);
         break;
       case '0d':
-        $result['value_hr']=__('Arrêté position indéfinie', __FILE__);
+        $result['status']=__('Arrêté position indéfinie', __FILE__);
         break;
       case '0e':
-        $result['value_hr']=__('Top position stop wich is tilt position', __FILE__);
+        $result['status']=__('Top position stop wich is tilt position', __FILE__);
         break;
       case '0f':
-        $result['value_hr']=__('Bottom position stop wich is intermediate position', __FILE__);
+        $result['status']=__('Bottom position stop wich is intermediate position', __FILE__);
         break;
       case '10':
-        $result['value_hr']=__('Equipement éteint', __FILE__);
+        $result['status']=__('Equipement éteint', __FILE__);
         break;
       case '11':
-        $result['value_hr']=__('Equipement allumé', __FILE__);
+        $result['status']=__('Equipement allumé', __FILE__);
         break;
       default:
-        $result['value_hr']=__('Etat inconnu', __FILE__);
+        $result['status']=__('Etat inconnu', __FILE__);
     }
 
     $eleroha = eleroha::byId($result['eqlogic_id']);
     if (is_object($eleroha)) {
-      $eleroha->checkAndUpdateCmd('info', $result['value']);
-      $eleroha->checkAndUpdateCmd('info_hr', $result['value_hr']);
-      log::add('eleroha','debug','Obj found, saving Etat: '.$result['value'] . ' ('.$result['value_hr'].')');
+      $eleroha->checkAndUpdateCmd('value', $result['value']);
+      $eleroha->checkAndUpdateCmd('status', $result['status']);
+      log::add('eleroha','debug','Obj found, saving Etat: '.$result['value'] . ' ('.$result['status'].')');
       $eleroha->refreshWidget();
     }else{
-      log::add('eleroha','debug','Obj NO found, failed to save Etat: '.$result['info']['value']);
+      log::add('eleroha','debug','Obj NO found, failed to save Etat: '.$result['value']);
       die();
     }
 } catch (Exception $e) {

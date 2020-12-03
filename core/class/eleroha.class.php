@@ -258,9 +258,9 @@ class eleroha extends eqLogic {
           'unite'=>''
         ),
         // Etat row
-        'info'=>array(
-          'name'=>__('Etat row', __FILE__),
-          'id'=>'info',
+        'value'=>array(
+          'name'=>__('Valeur', __FILE__),
+          'id'=>'value',
           'parent'=>'0',
           'type'=>'info',
           'subtype'=>'string',
@@ -270,9 +270,9 @@ class eleroha extends eqLogic {
           'unite'=>''
         ),
         // Etat human readable
-        'info_hr'=>array(
+        'status'=>array(
           'name'=>__('Etat', __FILE__),
-          'id'=>'info_hr',
+          'id'=>'status',
           'parent'=>'0',
           'type'=>'info',
           'subtype'=>'string',

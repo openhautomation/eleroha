@@ -21,8 +21,6 @@ require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class eleroha extends eqLogic {
 
-  //public static $_widgetPossibility = array('custom' => true);
-
   public static function deamon_info(){
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
     $return = array();
@@ -133,39 +131,19 @@ class eleroha extends eqLogic {
 		}
 		return $return;
 	}
-/*
-  public static function cron15() {
-    log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
-
-    foreach (eqLogic::byType('eleroha') as $eleroha) {
-      $cmd = $eleroha->getCmd(null, 'refresh');
-      $data=array('apikey'=> jeedom::getApiKey('eleroha'), 'cmd' => 'getinfo', 'device' => array('id'=>$cmd->getConfiguration('device'), 'EqLogic_id'=>$eleroha->getId()));
-      $message = trim(json_encode($data));
-      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Params: ' . $message);
-
-      $socket = socket_create(AF_INET, SOCK_STREAM, 0);
-      socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'eleroha'));
-      socket_write($socket, trim($message), strlen(trim($message)));
-      socket_close($socket);
-      sleep(3);
-
-      // Dashboard
-      $mc = cache::byKey('elerohaWidgetdashboard' . $eleroha->getId());
-      $mc->remove();
-      $eleroha->toHtml('dashboard');
-      $eleroha->refreshWidget();
-    }
-  }
-*/
-    /*     * *************************Attributs****************************** */
-
-
 
     /*     * ***********************Methode static*************************** */
 
     /*
      * Fonction exécutée automatiquement toutes les minutes par Jeedom
       public static function cron() {
+
+      }
+     */
+
+    /*
+     * Fonction exécutée automatiquement toutes les 15 minutes par Jeedom
+      public static function cron15() {
 
       }
      */
@@ -184,8 +162,6 @@ class eleroha extends eqLogic {
 
       }
      */
-
-
 
     /*     * *********************Méthodes d'instance************************* */
     private function getMotorStructure(&$motorStructure){
@@ -373,130 +349,6 @@ class eleroha extends eqLogic {
     }
 
     /*
-    public function toHtml($_version = 'dashboard') {
-      log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' Called');
-      $replace = $this->preToHtml($_version);
-      if (!is_array($replace)) {
-        return $replace;
-      }
-      $version = jeedom::versionAlias($_version);
-
-      $refresh = $this->getCmd(null, 'refresh');
-      $replace['#refresh_id#'] = (is_object($refresh)) ? $refresh->getId() : '';
-
-      $info = $this->getCmd(null,'info');
-      $info_row=(is_object($info)) ? $info->execCmd() : '';
-      $info_row=(string) $info_row;
-      $info_row=strtolower($info_row);
-      switch ($info_row) {
-        case '00':
-          $replace['#state_info#']=__('Aucune information', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '01':
-          $replace['#state_info#']=__('Ouvert', __FILE__);
-          $replace['#info_image#']='upstop.png';
-          break;
-        case '02':
-          $replace['#state_info#']=__('Fermé', __FILE__);
-          $replace['#info_image#']='downstop.png';
-          break;
-        case '03':
-          $replace['#state_info#']=__('Intermédiaire', __FILE__);
-          $replace['#info_image#']='intermediate.png';
-          break;
-        case '04':
-          $replace['#state_info#']=__('Ventilation', __FILE__);
-          $replace['#info_image#']='tilt.png';
-          break;
-        case '05':
-          $replace['#state_info#']=__('Equipement bloqué', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '06':
-          $replace['#state_info#']=__('Surchauffe', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '07':
-          $replace['#state_info#']=__('Timeout', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '08':
-          $replace['#state_info#']=__('Début ouverture', __FILE__);
-          $replace['#info_image#']='upstart.png';
-          break;
-        case '09':
-          $replace['#state_info#']=__('Début fermeture', __FILE__);
-          $replace['#info_image#']='downstart.png';
-          break;
-        case '0a':
-          $replace['#state_info#']=__('Ouverture', __FILE__);
-          $replace['#info_image#']='upstart.png';
-          break;
-        case '0b':
-          $replace['#state_info#']=__('Fermeture', __FILE__);
-          $replace['#info_image#']='downstart.png';
-          break;
-        case '0d':
-          $replace['#state_info#']=__('Arrêté position indéfinie', __FILE__);
-          $replace['#info_image#']='stop.png';
-          break;
-        case '0e':
-          $replace['#state_info#']=__('Top position stop wich is tilt position', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '0f':
-          $replace['#state_info#']=__('Bottom position stop wich is intermediate position', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '10':
-          $replace['#state_info#']=__('Equipement éteint', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        case '11':
-          $replace['#state_info#']=__('Equipement allumé', __FILE__);
-          $replace['#info_image#']='undef.png';
-          break;
-        default:
-          $replace['#state_info#']=__('Etat inconnu', __FILE__);
-          $replace['#info_image#']='undef.png';
-      }
-      $replace['#info_id#'] = is_object($info) ? $info->getId() : '';
-      $replace['#info_name#'] = is_object($info) ? $info->getName() : '';
-      $replace['#info_display#'] = (is_object($info) && $info->getIsVisible()) ? "" : "display: none;";
-
-      $up = $this->getCmd(null,'up');
-      $replace['#up_id#'] = is_object($up) ? $up->getId() : '';
-      $replace['#up_name#'] = is_object($up) ? $up->getName() : '';
-      $replace['#up_display#'] = (is_object($up) && $up->getIsVisible()) ? "" : "display: none;";
-
-      $down = $this->getCmd(null,'down');
-      $replace['#down_id#'] = is_object($down) ? $down->getId() : '';
-      $replace['#down_name#'] = is_object($down) ? $down->getName() : '';
-      $replace['#down_display#'] = (is_object($down) && $down->getIsVisible()) ? "" : "display: none;";
-
-      $stop = $this->getCmd(null,'stop');
-      $replace['#stop_id#'] = is_object($stop) ? $stop->getId() : '';
-      $replace['#stop_name#'] = is_object($stop) ? $stop->getName() : '';
-      $replace['#stop_display#'] = (is_object($stop) && $stop->getIsVisible()) ? "" : "display: none;";
-
-      $tilt = $this->getCmd(null,'tilt');
-      $replace['#tilt_id#'] = is_object($tilt) ? $tilt->getId() : '';
-      $replace['#tilt_name#'] = is_object($tilt) ? $tilt->getName() : '';
-      $replace['#tilt_display#'] = (is_object($tilt) && $tilt->getIsVisible()) ? "" : "display: none;";
-
-      $intermediate = $this->getCmd(null,'intermediate');
-      $replace['#intermediate_id#'] = is_object($intermediate) ? $intermediate->getId() : '';
-      $replace['#intermediate_name#'] = is_object($intermediate) ? $intermediate->getName() : '';
-      $replace['#intermediate_display#'] = (is_object($intermediate) && $intermediate->getIsVisible()) ? "" : "display: none;";
-
-      $html = template_replace($replace, getTemplate('core', $_version, 'eleroha','eleroha'));
-
-      cache::set('elerohaWidget' . $_version . $this->getId(), $html, 0);
-      return $html;
-    }
-    */
-    /*
      * Non obligatoire mais permet de modifier l'affichage du widget si vous en avez besoin
       public function toHtml($_version = 'dashboard') {
 
@@ -519,14 +371,6 @@ class eleroha extends eqLogic {
 }
 
 class elerohaCmd extends cmd {
-    /*     * *************************Attributs****************************** */
-
-
-    /*     * ***********************Methode static*************************** */
-
-
-    /*     * *********************Methode d'instance************************* */
-
     /*
      * Non obligatoire permet de demander de ne pas supprimer les commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
       public function dontRemoveCmd() {

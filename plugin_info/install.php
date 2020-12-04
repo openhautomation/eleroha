@@ -17,21 +17,17 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function eleroha_install() {
-  message::add('eleroha', '**** install called', null, null);
   if (config::byKey('api::eleroha::mode') != 'localhost') {
     config::save('api::eleroha::mode', 'localhost');
   }
 }
 
 function eleroha_update() {
-  message::add('eleroha', '**** update called', null, null);
-
   if (config::byKey('api::eleroha::mode') != 'localhost') {
     config::save('api::eleroha::mode', 'localhost');
   }
 
   foreach (eqLogic::byType('eleroha') as $eqLogic) {
-
     $elerohaCmd = $eqLogic->getCmd(null, "info");
     if (is_object($elerohaCmd)){
       $elerohaCmd->remove();
@@ -51,7 +47,7 @@ function eleroha_update() {
     }
     $elerohaCmd = $eqLogic->getCmd(null, "status");
     if (!is_object($elerohaCmd)){
-      $elerohaCmd=new elerohaCmd();
+      $elerohaCmd=new cmd();
       $elerohaCmd->setEqLogic_id($eqLogic->getId());
       $elerohaCmd->setLogicalId("status");
       $elerohaCmd->setName("Etat");

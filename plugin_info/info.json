@@ -2,6 +2,7 @@
     "id" : "eleroha",
     "name" : "Eleroha",
     "description" : "Plugin de communication avec les stores équipés d'un système Elero",
+    "version": "2.0",
     "licence" : "AGPL",
     "author" : "OpenHomeAutomation",
     "require" : "3.2",

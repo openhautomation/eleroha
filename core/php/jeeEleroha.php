@@ -54,13 +54,71 @@ try {
       die();
     }
 
+    $result['status']=__('Etat inconnu', __FILE__);
+    switch ($result['value']) {
+      case '00':
+        $result['status']=__('Aucune information', __FILE__);
+        break;
+      case '01':
+        $result['status']=__('Ouvert', __FILE__);
+        break;
+      case '02':
+        $result['status']=__('Fermé', __FILE__);
+        break;
+      case '03':
+        $result['status']=__('Intermédiaire', __FILE__);
+        break;
+      case '04':
+        $result['status']=__('Ventilation', __FILE__);
+        break;
+      case '05':
+        $result['status']=__('Equipement bloqué', __FILE__);
+        break;
+      case '06':
+        $result['status']=__('Surchauffe', __FILE__);
+        break;
+      case '07':
+        $result['status']=__('Timeout', __FILE__);
+        break;
+      case '08':
+        $result['status']=__('Début ouverture', __FILE__);
+        break;
+      case '09':
+        $result['status']=__('Début fermeture', __FILE__);
+        break;
+      case '0a':
+        $result['status']=__('Ouverture', __FILE__);
+        break;
+      case '0b':
+        $result['status']=__('Fermeture', __FILE__);
+        break;
+      case '0d':
+        $result['status']=__('Arrêté position indéfinie', __FILE__);
+        break;
+      case '0e':
+        $result['status']=__('Top position stop wich is tilt position', __FILE__);
+        break;
+      case '0f':
+        $result['status']=__('Bottom position stop wich is intermediate position', __FILE__);
+        break;
+      case '10':
+        $result['status']=__('Equipement éteint', __FILE__);
+        break;
+      case '11':
+        $result['status']=__('Equipement allumé', __FILE__);
+        break;
+      default:
+        $result['status']=__('Etat inconnu', __FILE__);
+    }
+
     $eleroha = eleroha::byId($result['eqlogic_id']);
     if (is_object($eleroha)) {
-      $eleroha->checkAndUpdateCmd('info', $result['value']);
-      log::add('eleroha','debug','Obj found, saving Etat: '.$result['value']);
+      $eleroha->checkAndUpdateCmd('value', $result['value']);
+      $eleroha->checkAndUpdateCmd('status', $result['status']);
+      log::add('eleroha','debug','Obj found, saving Etat: '.$result['value'] . ' ('.$result['status'].')');
       $eleroha->refreshWidget();
     }else{
-      log::add('eleroha','debug','Obj NO found, failed to save Etat: '.$result['info']['value']);
+      log::add('eleroha','debug','Obj NO found, failed to save Etat: '.$result['value']);
       die();
     }
 } catch (Exception $e) {

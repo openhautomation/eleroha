@@ -16,10 +16,49 @@
  */
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function rikaha_install() {
+function eleroha_install() {
+  if (config::byKey('api::eleroha::mode') != 'localhost') {
+    config::save('api::eleroha::mode', 'localhost');
+  }
 }
 
-function rikaha_update() {
+function eleroha_update() {
+  if (config::byKey('api::eleroha::mode') != 'localhost') {
+    config::save('api::eleroha::mode', 'localhost');
+  }
+
+  foreach (eqLogic::byType('eleroha') as $eqLogic) {
+    $elerohaCmd = $eqLogic->getCmd(null, "info");
+    if (is_object($elerohaCmd)){
+      $elerohaCmd->remove();
+    }
+
+    $elerohaCmd = $eqLogic->getCmd(null, "value");
+    if (!is_object($elerohaCmd)){
+      $elerohaCmd=new cmd();
+      $elerohaCmd->setEqLogic_id($eqLogic->getId());
+      $elerohaCmd->setLogicalId("value");
+      $elerohaCmd->setName("Valeur");
+      $elerohaCmd->setType("info");
+      $elerohaCmd->setSubType("string");
+      $elerohaCmd->setIsHistorized(0);
+      $elerohaCmd->setIsVisible(0);
+      $elerohaCmd->save();
+    }
+    $elerohaCmd = $eqLogic->getCmd(null, "status");
+    if (!is_object($elerohaCmd)){
+      $elerohaCmd=new cmd();
+      $elerohaCmd->setEqLogic_id($eqLogic->getId());
+      $elerohaCmd->setLogicalId("status");
+      $elerohaCmd->setName("Etat");
+      $elerohaCmd->setType("info");
+      $elerohaCmd->setSubType("string");
+      $elerohaCmd->setIsHistorized(0);
+      $elerohaCmd->setIsVisible(1);
+      $elerohaCmd->save();
+    }
+  }
+
   $eleroha_path=dirname(__FILE__, 2) . "/resources/elerohad/";
   if(file_exists($eleroha_path . "globals.py")===true){
     unlink($eleroha_path . "globals.py");
@@ -40,6 +79,6 @@ function rikaha_update() {
   }
 }
 
-function rikaha_remove(){
+function eleroha_remove(){
 }
 ?>

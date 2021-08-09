@@ -33,6 +33,9 @@ Les principales fonctionnalités de Eleroha sont :
 >Après avoir activé, le plugin il est indispensable de :
 1. Sélectionner port du stick USB Elero.
 2. Saisir le port 55030.
+3. Vous pouvez également activer la gestion d'une file d'attente.
+Cette fonctionnalité met en attente les commandes reçues et les exécute toutes les 15 secondes dans la limite de 10 actions.
+La commande de demande d'état (rafraichissement) est exclue de cette file.
 
 N'oubliez pas de sauvegarder.
 
@@ -52,17 +55,23 @@ Félicitation, vous avez terminé.
 
 Vous pouvez actualiser manuellement les informations en cliquant sur l'icône située en haut à droite du widget.
 
-**Utilisation**
+**Informations**
 
 Attention :
 * le stick Elero ne gère ni buffer ni file d'attente.
 * Le stick Elero essaiera toujours de traiter la dernière commande reçue
 
-Afin de pouvoir interrompre une commande par une autre à tout moment, Eleroha ne gère pas de file d'attente.
+Pour chaque commandes (commande de demande d'état exclue), le plugin agira de la manière suivante :
 
-La commande Etat d'Eleroha stock le dernier état reçu de l'équipement. Elle peut être mise à jour en utilisant la commande rafraichir.
+1. T0 -> Envoi de la commande (monter, descendre...).
+2. T0+10 secondes -> Envoie de la commande de demande d'état.
+3. T0+180 secondes -> Envoie de la commande de demande d'état.
 
-Voici les valeurs gérées :
+Cette séquence est appliquée également lorsque la gestion de la file d'attente est activée dans le plugin.
+Dans le cas où la gestion de la file d'attente n'est pas activée, cette séquence sera interrompue si une autre action est envoyée avant 190 secondes.
+
+Les état gérés par le plugin sont :
+
 * 00 : Aucune information
 * 01 : Ouvert
 * 02 : Fermé
@@ -81,11 +90,3 @@ Voici les valeurs gérées :
 * 0F : Equipement éteint
 * 10 : Equipement allumé
 * 11 : Etat inconnu
-
-Afin de gérer au mieux les mises à jour d'état après une commande voici ce qui est conseiller de faire
-
-1. Envoi de la commande (commande d'action, commande rafraichir exclue)
-2. Attendre 10 seconde et rafraichir afin de connaitre l'état en cours
-3. Attendre 3 minutes et rafraichir afin de connaitre l'état final.
-
-Cette séquence est gérer par le plugin si aucune commande n'est envoyée, 3 minutes et 10 secondes avant la précédente.

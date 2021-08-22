@@ -14,6 +14,7 @@ from optparse import OptionParser
 from os.path import join
 import json
 import uuid
+from textwrap import wrap
 
 try:
     from jeedom.jeedom import *
@@ -81,26 +82,24 @@ def easyInfo(channel, frame):
 # ----------------------------------------------------------------------------
 def decodeAck(rowmessage, decoded):
     logging.debug('decodeAck() Called')
-    if len(rowmessage)<6:
+    logging.debug('decodeAck() message to decode ' + str(rowmessage))
+    if len(rowmessage) != 14:
+        logging.debug('decodeAck() invalid length message')
         return False
 
-    logging.debug('decodeAck() Called')
-    frame=[]
-    for elm in rowmessage:
-        frame.append(str(jeedom_utils.ByteToHex(elm)).lower())
-
-    ackcs=frame[-1]
+    frame=wrap(rowmessage, 2)
     tmpframe=frame[:-1]
     makeCS(tmpframe)
 
-    if frame[-1] == ackcs:
-        logging.debug('decodeAck() CS ok')
+    if frame[-1] == frame[-1]:
+        logging.debug('decodeAck() CS OK')
+
         firstChannels=frame[3]
         secondChannels=frame[4]
+        logging.debug('decodeAck() first channel: '+str(firstChannels))
+        logging.debug('decodeAck() first channel: '+str(secondChannels))
         bytes=firstChannels+secondChannels
-        print bytes
         bytes=int(bytes, 16)
-        print bytes
 
         channel=1
         while bytes != 1 and channel <= 15:
@@ -124,7 +123,8 @@ def read_stick(name):
         time.sleep(0.02)
         message = None
         try:
-            byte = shared.JEEDOM_SERIAL.read()
+            #logging.debug("read_stick() try to read on serial port")
+            message = shared.JEEDOM_SERIAL.eleroread()
         except Exception as e:
             logging.error("read_stick() error: " + str(e))
             if str(e) == '[Errno 5] Input/output error':
@@ -132,10 +132,8 @@ def read_stick(name):
                 shutdown()
 
         try:
-            if byte != 0 and  byte != None :
-                message = byte + shared.JEEDOM_SERIAL.readbytes(ord(byte))
-                logging.debug("read_stick() message: " + str(jeedom_utils.ByteToHex(message)))
-
+            if message != None :
+                logging.debug("read_stick() message received from serial port: " + str(message))
                 info=[]
                 if decodeAck(message, info) == True:
                     logging.debug("read_stick() Ack: OK")
@@ -148,7 +146,7 @@ def read_stick(name):
                         shared.CMD_IN_PROCESS.clear()
                         logging.debug('read_stick() message to Jeedom sent')
 
-        except OSError, e:
+        except OSError as e:
             logging.error("read_eleroha() error on decode message : " + str(jeedom_utils.ByteToHex(message))+" => "+str(e))
 # ----------------------------------------------------------------------------
 def write_stick(id, eqlogic_id, frame, timer_id):
@@ -183,7 +181,7 @@ def read_jeedom(name):
                     logging.error("read_jeedom() Invalid apikey from socket : " + str(message))
                     return
 
-                if message.has_key('queueing')==False:
+                if 'queueing' not in message:
                     message['queueing']=0
 
                 logging.debug('read_jeedom() Device ID: '+str(message['device']['id']))

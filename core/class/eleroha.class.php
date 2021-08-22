@@ -65,7 +65,7 @@ class eleroha extends eqLogic {
     log::add('eleroha', 'debug', __FUNCTION__ . '()-ln:'.__LINE__.' deamon path: ' .$eleroha_path );
 
     $protocol = trim($protocol, ',');
-    $cmd = '/usr/bin/python ' . $eleroha_path . '/elerohad.py';
+    $cmd = '/usr/bin/python3 ' . $eleroha_path . '/elerohad.py';
     $cmd .= ' --loglevel ' . log::convertLogLevel(log::getLogLevel('eleroha'));
 		$cmd .= ' --device ' . $port;
 		$cmd .= ' --socketport ' . config::byKey('socketport', 'eleroha');

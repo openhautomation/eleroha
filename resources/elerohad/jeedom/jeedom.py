@@ -31,6 +31,8 @@ import signal
 import unicodedata
 import pyudev
 import json
+import binascii
+from struct import *
 
 # ------------------------------------------------------------------------------
 
@@ -283,7 +285,7 @@ class jeedom_serial():
 		return None
 
 	def readbytes(self,number):
-		buf = ''
+		buf = b''
 		for i in range(number):
 			try:
 				byte = self.port.read()
@@ -292,6 +294,24 @@ class jeedom_serial():
 			except OSError as e:
 				logging.error("Error: " + str(e))
 			buf += byte
+		return buf
+
+	def eleroread(self):
+		number=self.port.inWaiting()
+		logging.debug("Serial port inWaiting: " + str(number))
+		buf = None
+		if number !=0:
+			buf = ''
+			for i in range(number):
+				try:
+					byte = self.port.read()
+					logging.debug("Serial read: " + str("0x{:02x}".format(unpack('B',byte)[0])))
+				except IOError as e:
+					logging.error("Error: " + str(e))
+				except OSError as e:
+					logging.error("Error: " + str(e))
+
+				buf += str("{:02x}".format(unpack('B',byte)[0]))
 		return buf
 
 # ------------------------------------------------------------------------------

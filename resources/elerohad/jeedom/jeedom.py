@@ -298,7 +298,7 @@ class jeedom_serial():
 
 	def eleroread(self):
 		number=self.port.inWaiting()
-		logging.debug("Serial port inWaiting: " + str(number))
+		#logging.debug("Serial port inWaiting: " + str(number))
 		buf = None
 		if number !=0:
 			buf = ''

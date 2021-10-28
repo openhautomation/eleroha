@@ -166,6 +166,10 @@ def write_stick(id, eqlogic_id, frame, timer_id):
     logging.debug("Write frame : "+ str(frame))
 
     shared.CMD_IN_PROCESS={"id":id, "eqlogic_id":eqlogic_id, "frame":frame, "timer_id":timer_id, "cmd_time":now}
+
+    if timer_id != False:
+        logging.error("write_stick() Remove item from TIMER_LISTE : " + str(timer_id))
+        shared.TIMER_LISTE.pop(timer_id, None)
 # ----------------------------------------------------------------------------
 def read_jeedom(name):
     while 1:
@@ -234,43 +238,43 @@ def read_jeedom(name):
                         logging.debug("Queue activated for the device")
                         queue_delay=15
                         now=int(time.time())
+                        size_timerliste=len(shared.TIMER_LISTE)
 
-                        if len(shared.TIMER_LISTE) < 31 :
-                            logging.debug("Less then 30 items in TIMER_LISTE: queueing ok")
+                        logging.debug("TIMER_LISTE size : "+str(size_timerliste))
+                        if size_timerliste>30:
+                            logging.debug("More than 30 items in TIMER_LISTE : cleaning")
+                            clearqueue()
 
-                            timer_id=str(uuid.uuid4())
-                            device_item["timer_id"]=timer_id
+                        timer_id=str(uuid.uuid4())
+                        device_item["timer_id"]=timer_id
 
-                            if len(shared.TIMER_LISTE)==0:
-                                logging.debug("First item in TIMER_LISTE")
-                                shared.ACTION_TIME=now-10
+                        if size_timerliste==0:
+                            logging.debug("First item in TIMER_LISTE")
+                            shared.ACTION_TIME=now-10
 
-                            # le prochain timer est-il passe
-                            if shared.ACTION_TIME < now:
-                                # prochain timer dans 2s
-                                new_timer_time=2
-                            else:
-                                # dans combien de temps a lieu le prochain timer
-                                next_timer_time=shared.ACTION_TIME-now
-                                # Timer suivant dans next_timer+15s
-                                new_timer_time=next_timer_time+queue_delay
-
-                            logging.debug("New timer in "+str(new_timer_time))
-                            shared.ACTION_TIME=now+new_timer_time
-
-                            timer = threading.Timer(new_timer_time, write_stick, [], device_item)
-                            timer.start()
-                            shared.TIMER_LISTE[timer_id]=timer
-
-                            if request_info:
-                                timer = threading.Timer((new_timer_time+10), write_stick, [], device_item_info)
-                                timer.start()
-
-                                timer = threading.Timer((new_timer_time+180), write_stick, [], device_item_info)
-                                timer.start()
-
+                        # le prochain timer est-il passe
+                        if shared.ACTION_TIME < now:
+                            # prochain timer dans 2s
+                            new_timer_time=2
                         else:
-                            logging.debug("More than 30 items in TIMER_LISTE")
+                            # dans combien de temps a lieu le prochain timer
+                            next_timer_time=shared.ACTION_TIME-now
+                            # Timer suivant dans next_timer+15s
+                            new_timer_time=next_timer_time+queue_delay
+
+                        logging.debug("New timer in "+str(new_timer_time))
+                        shared.ACTION_TIME=now+new_timer_time
+
+                        timer = threading.Timer(new_timer_time, write_stick, [], device_item)
+                        timer.start()
+                        shared.TIMER_LISTE[timer_id]=timer
+
+                        if request_info:
+                            timer = threading.Timer((new_timer_time+10), write_stick, [], device_item_info)
+                            timer.start()
+
+                            timer = threading.Timer((new_timer_time+180), write_stick, [], device_item_info)
+                            timer.start()
 
         except Exception as e:
         			logging.error('Error on read socket: '+str(e))
